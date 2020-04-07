@@ -14,7 +14,7 @@ top-level metadata object of the in-memory or file format.
 
 For clarity, the following shows the unencoded JSON structure:
 
-```json
+```python
 "geo": {
         "columns": {...},  # REQUIRED: see below
         "creator": {
@@ -29,7 +29,7 @@ For clarity, the following shows the unencoded JSON structure:
 Each geometry column in the dataset must be included in the `columns` field above
 with the following content, keyed by the column name:
 
-```json
+```python
 "<column_name>": {
     "bounds": [<xmin>, <ymin>, (zmin), <xmax>, <ymax>, (zmax)],  # OPTIONAL
     "crs": "<WKT representation of CRS>",  # REQUIRED
