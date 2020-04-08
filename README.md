@@ -5,7 +5,8 @@ Specifications for storing geospatial data in Apache Arrow and Apache Parquet.
 The [Apache Arrow](https://arrow.apache.org/) project specifies a standardized
 language-independent columnar memory format. It enables shared computational
 libraries, zero-copy shared memory and streaming messaging, interprocess
-communication, etc and is supported by many programming languages.
+communication, etc and is supported by many programming languages. The Feather
+file format is an on-disk representation of this memory format.
 
 [Apache Parquet](https://parquet.apache.org/) is an efficient, columnar storage
 format (originating from the Hadoop ecosystem). It is a widely used file format
@@ -30,4 +31,4 @@ transfer:
 
 The goal of this repository is to discuss and move towards specifications
 on metadata and memory layout for storing geospatial data in the Arrow memory
-format or related formats (Feather, Parquet).
+layout or related formats (Feather, Parquet).
