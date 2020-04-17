@@ -1,4 +1,4 @@
-# Metadata Schema - Version 1.0
+# Metadata Schema - Version 0.1.0
 
 In order to ensure interoperability between implementations of the Arrow in-memory format
 and associated storage formats such as Parquet and Feather, it is necessary to
@@ -9,8 +9,20 @@ This information includes:
 -   spatial properties of each geometry column
 -   name of the primary geometry column
 
+## Schema stability
+
+This is the first major draft of this metadata schema. It is intended to help
+test implementation details and gather feedback from the community. As such,
+this version does not make any stability promises that will be upheld in future
+versions. We encourage you to offer feedback on this schema and implement
+tests using it. We do not encourage you to use this version of the schema
+or associated implementations in production settings until future versions of
+this schema.
+
+## Metadata structure
+
 Metadata is to be stored as a JSON-encoded UTF-8 string under the "geo" key within the
-top-level metadata object of the in-memory or file format.
+top-level metadata object of the in-memory Arrow schema or file format.
 
 For clarity, the following shows the unencoded JSON structure:
 
@@ -51,7 +63,13 @@ These must be encoded with the minimum and maximum values of each dimension:
 
 ## Coordinate Reference System (CRS) encoding
 
-CRS information must be encoded using Well-Known Text ([WKT](https://proj.org/faq.html#what-is-the-best-format-for-describing-coordinate-reference-systems).
+The `crs` key must always be present.
+
+The value of this key may be `null` to indicate that there is no CRS assigned
+to this column.
+
+If non-null, CRS information must be encoded using Well-Known Text
+([WKT](https://proj.org/faq.html#what-is-the-best-format-for-describing-coordinate-reference-systems).
 
 Multiple dialects of WKT exist, including:
 
@@ -60,7 +78,7 @@ Multiple dialects of WKT exist, including:
 -   WKT2:2015 (ISO 19162:2015)
 -   WKT2:2018 (ISO 19162:2018)
 
-Any WKT encoding used in must be supported by the
+Any WKT encoding used must be supported by the
 [Proj](https://proj.org/index.html) library.
 
 ## Geometry encoding
