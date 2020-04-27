@@ -34,7 +34,7 @@ For clarity, the following shows the unencoded JSON structure:
             "version": "<library version>",  # REQUIRED
         },
         "primary_column": "<primary geometry column name>",  # REQUIRED
-        "version": "1.0.0"  # REQUIRED
+        "schema_version": "0.1.0"  # REQUIRED
     }
 ```
 
@@ -43,7 +43,7 @@ with the following content, keyed by the column name:
 
 ```python
 "<column_name>": {
-    "bounds": [<xmin>, <ymin>, (zmin), <xmax>, <ymax>, (zmax)],  # OPTIONAL
+    "bbox": [<xmin>, <ymin>, (zmin), <xmax>, <ymax>, (zmax)],  # OPTIONAL
     "crs": "<WKT representation of CRS>",  # REQUIRED
     "encoding": "WKB",  # REQUIRED
 }
@@ -101,7 +101,7 @@ Other encodings may be introduced in future versions of this schema.
 "geo": {
         "columns": {
             "geometry": {
-                "bounds": [-180, -80, 180, 80],
+                "bbox": [-180, -80, 180, 80],
                 "crs": "GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\","7030"]],AUTHORITY[\"EPSG\","6326"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.01745329251994328,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"4326\"]]",
                 "encoding": "WKB",
             }
