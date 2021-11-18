@@ -28,14 +28,14 @@ For clarity, the following shows the unencoded JSON structure:
 
 ```python
 "geo": {
-        "columns": {...},  # REQUIRED: see below
-        "creator": {
-            "library": "<library name>",  # REQUIRED
-            "version": "<library version>",  # REQUIRED
-        },
-        "primary_column": "<primary geometry column name>",  # REQUIRED
-        "schema_version": "0.1.0"  # REQUIRED
-    }
+    "columns": {...},  # REQUIRED: see below
+    "creator": {
+        "library": "<library name>",  # REQUIRED
+        "version": "<library version>",  # REQUIRED
+    },
+    "primary_column": "<primary geometry column name>",  # REQUIRED
+    "schema_version": "0.1.0"  # REQUIRED
+}
 ```
 
 Each geometry column in the dataset must be included in the `columns` field above
@@ -83,7 +83,7 @@ Any WKT encoding used must be supported by the
 
 ## Geometry encoding
 
-Because each geometry-oriented library, such as [GEOS](https://github.com/libgeos/geos)
+Because each geometry-oriented library, such as [GEOS](https://github.com/libgeos/geos),
 generally has its own internal representation of geometry in memory, it is
 necessary to use a serialization format for storing geometry data within
 Arrow or related file formats.
@@ -99,18 +99,18 @@ Other encodings may be introduced in future versions of this schema.
 
 ```json
 "geo": {
-        "columns": {
-            "geometry": {
-                "bbox": [-180, -80, 180, 80],
-                "crs": "GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\","7030"]],AUTHORITY[\"EPSG\","6326"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.01745329251994328,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"4326\"]]",
-                "encoding": "WKB",
-            }
-        },
-        "creator": {
-            "library": "geopandas",
-            "version": "0.7.0",
-        },
-        "primary_column": "geometry",
-        "version": "1.0.0"
-    }
+    "columns": {
+        "geometry": {
+            "bbox": [-180, -80, 180, 80],
+            "crs": "GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\","7030"]],AUTHORITY[\"EPSG\","6326"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.01745329251994328,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"4326\"]]",
+            "encoding": "WKB",
+        }
+    },
+    "creator": {
+        "library": "geopandas",
+        "version": "0.7.0",
+    },
+    "primary_column": "geometry",
+    "version": "0.1.0"
+}
 ```
