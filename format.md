@@ -19,32 +19,35 @@ features can be stored in Arrow (and Arrow-compatible) data structures.
 ## Motivation
 
 Standard ways to represent or serialize vector geometries include WKT (e.g.
-"POINT (0 0)"), WKB and GeoJSON.
-Each of those has a considerable deserialization cost for only accessing the
-actual coordinate values. And don't have a memory layout friendly for
-compute.
+"POINT (0 0)"), WKB and GeoJSON. Each of those representations have a
+considerable (de)serialization cost, neither do they have a compute-friendly
+memory layout.
+
+The goal of this specification is to store geometries in an Arrow-compatible
+format that has 1) low (de)serialization overhead and 2) once in memory is
+cheap to convert to geospatial libraries (e.g. GEOS or JTS) or easy to
+directly operate on (e.g. directly working with the coordinate values).
 
 Benefits of using the proposed Arrow-native format:
 
-- Cheap access to the raw coordinate values for all geometries
-- Columnar data layout
+- Cheap access to the raw coordinate values for all geometries.
+- Columnar data layout.
 - Full data type system of Arrow is available for attribute data.
 
-The goal of the Arrow geometry specification is to store the raw coordinates
-values with enough metadata to be able to reconstruct.
+More specifically, the Arrow geometry specification stores the raw coordinates
+values in contiguous arrays with enough metadata (offsets) to reconstruct or
+interpret as actual geometries.
 
-FlatGeoBuf (add link) also achieves this, but is record-oriented, while Arrow
-is column-oriented.
-
+[FlatGeoBuf](https://flatgeobuf.org/) is similar on various aspects, but is
+record-oriented, while Arrow is column-oriented.
 
 ## Format
 
 The terminology for array types in this section is based on the
 [Arrow Columnar Format specification](https://arrow.apache.org/docs/format/Columnar.html).
 
-GeoArrow proposes a packed columnar data format for the fundamental geometry types.
-
-GeoArrow uses packed coordinate and offset arrays to define objects.
+GeoArrow proposes a packed columnar data format for the fundamental geometry
+types, using packed coordinate and offset arrays to define geometry objects.
 
 The inner level is always a FixedSizeList array storing the interleaved
 coordinate values (`[x, y, x, y, ...]`, stored as a single array of length
@@ -73,11 +76,19 @@ list is a single MultiPoint (i.e. a list of xy coordinates).
 
 * `List<List<FixedSizeList<double>[2]>>`
 
+An array of MultiLineStrings is represented as a nested list array with two
+levels of outer nesting: each element of the array (MultiLineString) is a
+list of LineStrings, which consist itself of a list xy vertices.
 
 **MultiPolygon**
 
 * `List<List<List<FixedSizeList<double>[2]>>>`
 
+An array of MultiPolygons is represented as a nested list array with three
+levels of outer nesting: each element of the array (MultiPolygon) is a list
+of Polygons, which consist itself of a list of rings (the first ring is the
+exterior ring, optional subsequent rings are interior rings), and each ring
+is a list of xy vertices.
 
 ### Missing values (nulls)
 
@@ -114,11 +125,11 @@ Polygon.
 
 ## Open Questions
 
-* Need the flexibility to switch between interleaved xy vs separate xy? (i.e. fixed size list vs struct array as innner level)
+* Need the flexibility to switch between interleaved xy vs separate xy? (i.e. fixed size list vs struct array as innner level) Advantage is that this only changes the inner coordinate buffer, all outer levels (offset arrays) stay exactly the same.
 * Storing z interleaved with xy or separate?
-* Separate types of LineString and Polygon?
-* How to handle GeometryCollections?
-* How to handle arrays with mixed geometry types?
+* Separate types of LineString and Polygon? -> they have the same memory layout (number of levels of nesting) as MultiPoint / MultiLineString, and thus with metadata can easily be distinguished
+* How to handle GeometryCollections? (possible with unions)
+* How to handle arrays with mixed geometry types? (possible with unions)
 
 
 ## Concrete examples of the memory layout
