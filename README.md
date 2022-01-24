@@ -32,3 +32,10 @@ transfer:
 The goal of this repository is to discuss and move towards specifications
 on metadata and memory layout for storing geospatial data in the Arrow memory
 layout or related formats (Feather, Parquet).
+
+## Implementations
+
+**Parquet and Feather IO using standard metadata**
+
+* [GeoPandas](https://geopandas.org/en/stable/docs/user_guide/io.html#apache-parquet-and-feather-file-formats) (Python)
+* [sfarrow](https://wcjochem.github.io/sfarrow/index.html) (R)
