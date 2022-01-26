@@ -69,7 +69,7 @@ The value of this key may be `null` to indicate that there is no CRS assigned
 to this column.
 
 If non-null, CRS information must be encoded using Well-Known Text
-([WKT](https://proj.org/faq.html#what-is-the-best-format-for-describing-coordinate-reference-systems).
+([WKT](https://proj.org/faq.html#what-is-the-best-format-for-describing-coordinate-reference-systems)).
 
 Multiple dialects of WKT exist, including:
 
