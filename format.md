@@ -70,7 +70,8 @@ coordinates.
 * `List<FixedSizeList<double>[2]>`
 
 An array of MultiPoints is represented as a nested list array, where each outer
-list is a single MultiPoint (i.e. a list of xy coordinates).
+list is a single MultiPoint (i.e. a list of xy coordinates). The child name of the outer `List`
+should be "points".
 
 **MultiLineString**
 
@@ -78,7 +79,9 @@ list is a single MultiPoint (i.e. a list of xy coordinates).
 
 An array of MultiLineStrings is represented as a nested list array with two
 levels of outer nesting: each element of the array (MultiLineString) is a
-list of LineStrings, which consist itself of a list xy vertices.
+list of LineStrings, which consist itself of a list xy vertices. The child name
+of the outer list should be "linestrings"; the child name of the inner list should be
+"vertices".
 
 **MultiPolygon**
 
@@ -88,7 +91,8 @@ An array of MultiPolygons is represented as a nested list array with three
 levels of outer nesting: each element of the array (MultiPolygon) is a list
 of Polygons, which consist itself of a list of rings (the first ring is the
 exterior ring, optional subsequent rings are interior rings), and each ring
-is a list of xy vertices.
+is a list of xy vertices. The child name of the outer list should be "polygons"; the child name
+of the middle list should be "rings"; the child name of the inner list should be "vertices".
 
 ### Missing values (nulls)
 
@@ -184,7 +188,7 @@ Physical representation (buffers):
 * Coordinates: `[0.0, 0.0, 0.0, 1.0, 0.0, 2.0, 1.0, 0.0, 1.0, 1.0, 2.0, 0.0, 2.0, 1.0, 2.0, 2.0]`
 * Geometry offsets: `[0, 3, 5, 8]`
 
-(Note: for actual offset in coordinates array, you need offsets * 2 in case of 2-dimensional data)
+(Note: for offset into the coordinates array, you need the number of geometry offsets * 2 in the case of 2-dimensional data)
 
 
 **MultiLineString**
