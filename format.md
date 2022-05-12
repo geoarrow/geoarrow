@@ -50,9 +50,9 @@ GeoArrow proposes a packed columnar data format for the fundamental geometry
 types, using packed coordinate and offset arrays to define geometry objects.
 
 The inner level is always a FixedSizeList array storing the interleaved
-coordinate values (`[x, y, x, y, ...]`, stored as a single array of length
-`2 * N`). For any geometry type except Point, this inner level is nested in
-one or multiple
+coordinate values (`[x, y, x, y, ...]`, physically stored as a single array
+of length `n_dim * n_coords`). For any geometry type except Point, this inner
+level is nested in one or multiple
 [variable sized list](https://arrow.apache.org/docs/format/Columnar.html#variable-size-list-layout)
 arrays. In practice, this means we have additional arrays storing the offsets
 that denote where a new geometry, a new geometry part, or a new polygon ring
@@ -60,39 +60,60 @@ starts.
 
 **Point**
 
-* `FixedSizeList<double>[2]`
+* `FixedSizeList<double>[n_dim]`
 
 For an array of Point geometries, only a single array is used of interleaved
-coordinates.
+coordinates. `n_dim` can be 2, 3, or 4 depending on the dimensionality of the
+geometries, and the field name of the list should be "xy", "xyz" or "xyzm",
+reflecting the dimensionality.
+
+**LineString**
+
+* `List<FixedSizeList<double>[n_dim]>`
+
+An array of LineStrings is represented as a nested list array with one
+level of outer nesting: each element of the array (LineString) is a
+list of xy vertices. The child name of the outer list should be "vertices".
+
+**Polygon**
+
+* `List<List<FixedSizeList<double>[n_dim]>>`
+
+An array of Polygons is represented as a nested list array with two levels of
+outer nesting: each element of the array (Polygon) is a list of rings (the
+first ring is the exterior ring, optional subsequent rings are interior
+rings), and each ring is a list of xy vertices. The child name of the outer
+list should be "rings"; the child name of the inner list should be "vertices".
 
 **MultiPoint**
 
-* `List<FixedSizeList<double>[2]>`
+* `List<FixedSizeList<double>[n_dim]>`
 
 An array of MultiPoints is represented as a nested list array, where each outer
-list is a single MultiPoint (i.e. a list of xy coordinates). The child name of the outer `List`
-should be "points".
+list is a single MultiPoint (i.e. a list of xy coordinates). The child name of
+the outer `List` should be "points".
 
 **MultiLineString**
 
-* `List<List<FixedSizeList<double>[2]>>`
+* `List<List<FixedSizeList<double>[n_dim]>>`
 
 An array of MultiLineStrings is represented as a nested list array with two
 levels of outer nesting: each element of the array (MultiLineString) is a
-list of LineStrings, which consist itself of a list xy vertices. The child name
-of the outer list should be "linestrings"; the child name of the inner list should be
-"vertices".
+list of LineStrings, which consist itself of a list xy vertices (see above).
+The child name of the outer list should be "linestrings"; the child name of
+the inner list should be "vertices".
 
 **MultiPolygon**
 
-* `List<List<List<FixedSizeList<double>[2]>>>`
+* `List<List<List<FixedSizeList<double>[n_dim]>>>`
 
 An array of MultiPolygons is represented as a nested list array with three
 levels of outer nesting: each element of the array (MultiPolygon) is a list
 of Polygons, which consist itself of a list of rings (the first ring is the
 exterior ring, optional subsequent rings are interior rings), and each ring
-is a list of xy vertices. The child name of the outer list should be "polygons"; the child name
-of the middle list should be "rings"; the child name of the inner list should be "vertices".
+is a list of xy vertices. The child name of the outer list should be "polygons";
+the child name of the middle list should be "rings"; the child name of the
+inner list should be "vertices".
 
 ### Missing values (nulls)
 
