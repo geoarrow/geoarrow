@@ -58,26 +58,20 @@ arrays. In practice, this means we have additional arrays storing the offsets
 that denote where a new geometry, a new geometry part, or a new polygon ring
 starts.
 
-**Point**
-
-* `FixedSizeList<double>[n_dim]`
+**Point**: `FixedSizeList<double>[n_dim]`
 
 For an array of Point geometries, only a single array is used of interleaved
 coordinates. `n_dim` can be 2, 3, or 4 depending on the dimensionality of the
 geometries, and the field name of the list should be "xy", "xyz" or "xyzm",
 reflecting the dimensionality.
 
-**LineString**
-
-* `List<FixedSizeList<double>[n_dim]>`
+**LineString**: `List<FixedSizeList<double>[n_dim]>`
 
 An array of LineStrings is represented as a nested list array with one
 level of outer nesting: each element of the array (LineString) is a
 list of xy vertices. The child name of the outer list should be "vertices".
 
-**Polygon**
-
-* `List<List<FixedSizeList<double>[n_dim]>>`
+**Polygon**: `List<List<FixedSizeList<double>[n_dim]>>`
 
 An array of Polygons is represented as a nested list array with two levels of
 outer nesting: each element of the array (Polygon) is a list of rings (the
@@ -85,17 +79,13 @@ first ring is the exterior ring, optional subsequent rings are interior
 rings), and each ring is a list of xy vertices. The child name of the outer
 list should be "rings"; the child name of the inner list should be "vertices".
 
-**MultiPoint**
-
-* `List<FixedSizeList<double>[n_dim]>`
+**MultiPoint**: `List<FixedSizeList<double>[n_dim]>`
 
 An array of MultiPoints is represented as a nested list array, where each outer
 list is a single MultiPoint (i.e. a list of xy coordinates). The child name of
 the outer `List` should be "points".
 
-**MultiLineString**
-
-* `List<List<FixedSizeList<double>[n_dim]>>`
+**MultiLineString**: `List<List<FixedSizeList<double>[n_dim]>>`
 
 An array of MultiLineStrings is represented as a nested list array with two
 levels of outer nesting: each element of the array (MultiLineString) is a
@@ -103,9 +93,7 @@ list of LineStrings, which consist itself of a list xy vertices (see above).
 The child name of the outer list should be "linestrings"; the child name of
 the inner list should be "vertices".
 
-**MultiPolygon**
-
-* `List<List<List<FixedSizeList<double>[n_dim]>>>`
+**MultiPolygon**: `List<List<List<FixedSizeList<double>[n_dim]>>>`
 
 An array of MultiPolygons is represented as a nested list array with three
 levels of outer nesting: each element of the array (MultiPolygon) is a list
@@ -119,13 +107,13 @@ inner list should be "vertices".
 
 Arrow supports missing values through a validity bitmap, and for nested data
 types every level can be nullable. For this specification, only the outer
-level is allowed to have nulls, and all other levels should be non-nullable.
+level is allowed to have nulls, and all other levels (including the inner
+level with the actual coordinate values) should not contain any nulls. Those
+fields can be marked explicitly as non-nullable, but this is not required.
 
 In practice this means you can have a missing geometry, but not a geometry
-with a null part or coordinate (for example, a polygon with a null ring).
-
-Note that this doesn't strictly prohibit having NaN values in the
-coordinates, although this has limited use.
+with a null part or null (co)ordinate (for example, a polygon with a null
+ring or a point with a null x value).
 
 ### Empty geometries
 
@@ -135,17 +123,23 @@ empty inner list.
 Empty points can be represented as `POINT (NaN NaN)`.
 
 
-### GeometryCollections
+### GeometryCollection
 
-(for now out of scope, potentially as union)
+GeometryCollections are not yet included in the format description above,
+but it is planned to add this later. GeometryCollections can be represented
+using a [union type](https://arrow.apache.org/docs/format/Columnar.html#union-layout)
+of the other geometry types.
 
 
 ### Mixed Geometry types
 
-
-Of the same type (eg Polygon and MultiPolygon) -> can be stored together in
-MultiPolygon, with the convention that a length-1 MultiPolygon represents a
+When having mixed single and multi geometries of the same type (for example,
+Polygon and MultiPolygon), those can be stored together in a MultiPolygon
+layout, with the convention that a length-1 MultiPolygon represents a
 Polygon.
+
+Truly mixed geometry types can be supported as a union of the other geometry
+types, and it is planned to add a description of this later.
 
 
 ## Open Questions
