@@ -142,15 +142,6 @@ Truly mixed geometry types can be supported as a union of the other geometry
 types, and it is planned to add a description of this later.
 
 
-## Open Questions
-
-* Need the flexibility to switch between interleaved xy vs separate xy? (i.e. fixed size list vs struct array as innner level) Advantage is that this only changes the inner coordinate buffer, all outer levels (offset arrays) stay exactly the same.
-* Storing z interleaved with xy or separate?
-* Separate types of LineString and Polygon? -> they have the same memory layout (number of levels of nesting) as MultiPoint / MultiLineString, and thus with metadata can easily be distinguished
-* How to handle GeometryCollections? (possible with unions)
-* How to handle arrays with mixed geometry types? (possible with unions)
-
-
 ## Concrete examples of the memory layout
 
 **Point**
