@@ -51,7 +51,8 @@ The following metadata keys are supported:
 
 - `crs_encoding`: Contains a UTF-8-encoded string describing how
   the `crs` metadata field should be interpreted. Supported values of
-  `crs_encoding` are `"wkt2"` and `"projjson"`. If this key is omitted
+  `crs_encoding` are `"projjson"` and `"wkt2"`. If possible, producers
+  should encode this value as `"projjson"`. If this key is omitted
   the consumer cannot assume any specific encoding (i.e., producers
   can pass on CRS information in whatever form they received it). This
   metadata should not be present if `crs` is not present.
