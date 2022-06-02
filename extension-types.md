@@ -11,7 +11,7 @@ Whereas the GeoParquet metadata standard defines table-level metadata
 intended for geospatial-aware consumers of a file, this specification
 defines Array-level metadata intended for geospatial-aware consumers
 of individual Arrays (e.g., a library implementing a geospatial algorithm)
-or for non-geospaital aware consumers of a table containing such an
+or for non-geospatial aware consumers of a table containing such an
 Array (e.g., a compute engine that can select columns and/or filter rows).
 
 ## Extension names
