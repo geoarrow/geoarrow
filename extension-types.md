@@ -91,7 +91,7 @@ Storage type without extensions: `List<vertices: FixedSizeList<xy: double>[2]>`
 
 The metadata for the outer array would be as follows:
 
-- `ARROW:extension:name`: `geoarrow.point`
+- `ARROW:extension:name`: `geoarrow.linestring`
 
 The metadata for `vertices` would be as follows:
 
