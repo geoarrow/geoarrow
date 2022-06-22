@@ -55,6 +55,10 @@ The following metadata keys are supported:
   if the producer does not have any information about the CRS. This
   metadata key is only applicable to a `geoarrow.point` or `geoarrow.wkb`
   Array and should be omitted for an Array with any other extension name.
+  Note that axis order must be encoded according to the wording in the
+  [GeoPackage WKB binary encoding](https://www.geopackage.org/spec130/index.html#gpb_format)
+  (i.e., axis order is always longitude, latitude and easting, northing
+  regardless of the CRS specification).
 - `edges`: A value of `"spherical"` instructs consumers that edges follow
   a spherical path rather than a planar one. If this value is omitted,
   edges will be interpreted as planar. This metadata key is only applicable
