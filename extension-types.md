@@ -49,14 +49,8 @@ UTF-8-encoded string.
 
 The following metadata keys are supported:
 
-- `crs_encoding`: Contains a UTF-8-encoded string describing how
-  the `crs` metadata field should be interpreted. Supported values of
-  `crs_encoding` are `"projjson"` and `"wkt2"`. If possible, producers
-  should encode this value as `"projjson"`. If this key is omitted
-  the consumer cannot assume any specific encoding (i.e., producers
-  can pass on CRS information in whatever form they received it). This
-  metadata should not be present if `crs` is not present.
-- `crs`: Contains a serialized version of the coordinate reference system.
+- `crs`: Contains a serialized version of the coordinate reference system
+  using [PROJJSON](https://proj.org/specifications/projjson.html).
   The string is interpreted using UTF-8 encoding. This key can be omitted
   if the producer does not have any information about the CRS. This
   metadata key is only applicable to a `geoarrow.point` or `geoarrow.wkb`
