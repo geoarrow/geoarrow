@@ -14,6 +14,15 @@ of individual Arrays (e.g., a library implementing a geospatial algorithm)
 or for non-geospatial aware consumers of a table containing such an
 Array (e.g., a compute engine that can select columns and/or filter rows).
 
+Arrow's concept of [extension types](https://arrow.apache.org/docs/format/Columnar.html#extension-types)
+allows types with additional semantics to be built on top of a built-in
+Arrow data type. Extension types are implemented using two metadata fields:
+`ARROW:extension:name` and `ARROW:extension:metadata`. Whereas the
+built-in Arrow data types used to store geometry is defined in the
+[memory format specification](format.md), this document specifies how
+the name and metadata should be set to communicate additional
+information.
+
 ## Extension names
 
 When GeoArrow-encoded Arrays have the `ARROW:extension:name` metadata
