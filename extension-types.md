@@ -32,7 +32,7 @@ field set, it should be set to one of `geoarrow.point`, `geoarrow.linestring`,
 to the memory layouts and value constraints described in
 [GeoArrow memory layout specification](format.md). The `ARROW:extension:name`
 and `ARROW:extension:metadata` metadata fields must only be set for the Array
-at the top level (i.e., child arrays must not carray an extension name or
+at the top level (i.e., child arrays must not carry an extension name or
 metadata).
 
 ## Extension metadata
