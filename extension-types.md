@@ -30,79 +30,51 @@ field set, it should be set to one of `geoarrow.point`, `geoarrow.linestring`,
 `geoarrow.polygon`, `geoarrow.multipoint`, `geoarrow.multilinestring`,
 `geoarrow.multipolygon`, or `geoarrow.wkb`. These names correspond
 to the memory layouts and value constraints described in
-[GeoArrow memory layout specification](format.md).
-
-The `ARROW:extension:name` and `ARROW:extension:metadata` metadata fields
-must also be set for child Arrays (i.e., extension types are nested).
-For the extension types noted above, the nesting is as follows:
-
-- `geoarrow.point`: `FixedSizeList<xy|xyz|xym|xyzm: double>[n_dim]`
-- `geoarrow.linestring`: `List<vertices: geoarrow.point>`
-- `geoarrow.polygon`: `List<rings: List<vertices: geoarrow.point>>`
-- `geoarrow.multipoint`: `List<points: geoarrow.point>`
-- `geoarrow.multilinestring`: `List<linestrings: geoarrow.linestring>`
-- `geoarrow.multipolygon`: `List<polygons: geoarrow.polygon>`
-- `geoarrow.wkb`: `Binary`, `LargeBinary`, or `FixedSizeBinary[fixed_size]`
+[GeoArrow memory layout specification](format.md). The `ARROW:extension:name`
+and `ARROW:extension:metadata` metadata fields must only be set for the Array
+at the top level (i.e., child arrays must not carray an extension name or
+metadata).
 
 ## Extension metadata
 
 When GeoArrow-encoded Arrays have the `ARROW:extension:metadata` metadata
-field set, it must be encoded using the same format as specified for
-[metadata in the C data interface](https://arrow.apache.org/docs/format/CDataInterface.html#c.ArrowSchema.metadata)
-with the constraint that the 32-bit integers that encode the length of
-each key and each value must be little-endian. This encoding provides
-the ability to store arbitrary key/value pairs where the key is a UTF-8
-encoded string and the value can be an arbitrary sequence of bytes.
-For all currently supported keys, the value will be interpreted as a
-UTF-8-encoded string.
+field set, it must be seriaized as a UTF-8 encoded JSON object. The following
+keys in the JSON metadata object are supported:
 
-The following metadata keys are supported:
-
-- `crs`: Contains a serialized version of the coordinate reference system
+- `crs`: A JSON object describing the coordinate reference system (CRS)
   using [PROJJSON](https://proj.org/specifications/projjson.html).
-  The string is interpreted using UTF-8 encoding. This key can be omitted
-  if the producer does not have any information about the CRS. This
-  metadata key is only applicable to a `geoarrow.point` or `geoarrow.wkb`
-  Array and should be omitted for an Array with any other extension name.
-  Note that axis order must be encoded according to the wording in the
+  This key can also be omitted if the producer does not have any
+  information about the CRS. Note that regardless of the axis
+  order specified by the CRS, axis order will be interpreted
+  according to the wording in the
   [GeoPackage WKB binary encoding](https://www.geopackage.org/spec130/index.html#gpb_format):
   axis order is always (longitude, latitude) and (easting, northing)
   regardless of the the axis order encoded in the CRS specification.
 - `edges`: A value of `"spherical"` instructs consumers that edges follow
   a spherical path rather than a planar one. If this value is omitted,
   edges will be interpreted as planar. This metadata key is only applicable
-  to a `geoarrow.linestring`, `geoarrow.polygon`, or `geoarrow.wkb` array
-  and should be omitted for an Array with any other extension name.
+  to a `geoarrow.linestring`, `geoarrow.polygon`, `geoarrow.multilinestring`,
+  `geoarrow.multipolygon` or `geoarrow.wkb` array and should be omitted for
+  an Array with any other extension name.
 
 If all metadata keys are omitted, the `ARROW:extension:metadata` should
 also be omitted.
 
-## Concrete examples of extension types
+## Concrete examples of extension type metadata
 
-**Point with CRS**
+**Point without CRS**
 
-Storage type without extensions: `FixedSizeList<xy: double>[2]`
+Storage type without extension: `FixedSizeList<xy: double>[2]`
 
 The metadata for the outer array would be as follows:
 
 - `ARROW:extension:name`: `geoarrow.point`
-- `ARROW:extension:metadata`:
-    - `crs`: `{"$schema":"https://proj.org/schemas/v0.4/projjson.schema.json","type":"GeographicCRS","name":"WGS 84","datum":{"type":"GeodeticReferenceFrame","name":"World Geodetic System 1984","ellipsoid":{"name":"WGS 84","semi_major_axis":6378137,"inverse_flattening":298.257223563},"id":{"authority":"EPSG","code":6326}},"coordinate_system":{"subtype":"ellipsoidal","axis":[{"name":"Longitude","abbreviation":"lon","direction":"east","unit":"degree"},{"name":"Latitude","abbreviation":"lat","direction":"north","unit":"degree"}]}}`
-
-The serialized `ARROW:extension:metadata` would be: `b'\x01\x00\x00\x00\x03\x00\x00\x00crs\x07\x02\x00\x00{"$schema":"https://proj.org/schemas/v0.4/projjson.schema.json","type":"GeographicCRS","name":"WGS 84","datum":{"type":"GeodeticReferenceFrame","name":"World Geodetic System 1984","ellipsoid":{"name":"WGS 84","semi_major_axis":6378137,"inverse_flattening":298.257223563},"id":{"authority":"EPSG","code":6326}},"coordinate_system":{"subtype":"ellipsoidal","axis":[{"name":"Longitude","abbreviation":"lon","direction":"east","unit":"degree"},{"name":"Latitude","abbreviation":"lat","direction":"north","unit":"degree"}]}}'`
 
 **LineString with CRS**
 
-Storage type without extensions: `List<vertices: FixedSizeList<xy: double>[2]>`
+Storage type without extension: `List<vertices: FixedSizeList<xy: double>[2]>`
 
 The metadata for the outer array would be as follows:
 
 - `ARROW:extension:name`: `geoarrow.linestring`
-
-The metadata for `vertices` would be as follows:
-
-- `ARROW:extension:name`: `geoarrow.point`
-- `ARROW:extension:metadata`:
-    - `crs`: `{"$schema":"https://proj.org/schemas/v0.4/projjson.schema.json","type":"GeographicCRS","name":"WGS 84","datum":{"type":"GeodeticReferenceFrame","name":"World Geodetic System 1984","ellipsoid":{"name":"WGS 84","semi_major_axis":6378137,"inverse_flattening":298.257223563},"id":{"authority":"EPSG","code":6326}},"coordinate_system":{"subtype":"ellipsoidal","axis":[{"name":"Longitude","abbreviation":"lon","direction":"east","unit":"degree"},{"name":"Latitude","abbreviation":"lat","direction":"north","unit":"degree"}]}}`
-
-The serialized `ARROW:extension:metadata` for `vertices` would be: `b'\x01\x00\x00\x00\x03\x00\x00\x00crs\x07\x02\x00\x00{"$schema":"https://proj.org/schemas/v0.4/projjson.schema.json","type":"GeographicCRS","name":"WGS 84","datum":{"type":"GeodeticReferenceFrame","name":"World Geodetic System 1984","ellipsoid":{"name":"WGS 84","semi_major_axis":6378137,"inverse_flattening":298.257223563},"id":{"authority":"EPSG","code":6326}},"coordinate_system":{"subtype":"ellipsoidal","axis":[{"name":"Longitude","abbreviation":"lon","direction":"east","unit":"degree"},{"name":"Latitude","abbreviation":"lat","direction":"north","unit":"degree"}]}}'`
+- `ARROW:extension:metadata`: `{"crs": {"$schema":"https://proj.org/schemas/v0.4/projjson.schema.json","type":"GeographicCRS","name":"WGS 84","datum":{"type":"GeodeticReferenceFrame","name":"World Geodetic System 1984","ellipsoid":{"name":"WGS 84","semi_major_axis":6378137,"inverse_flattening":298.257223563},"id":{"authority":"EPSG","code":6326}},"coordinate_system":{"subtype":"ellipsoidal","axis":[{"name":"Longitude","abbreviation":"lon","direction":"east","unit":"degree"},{"name":"Latitude","abbreviation":"lat","direction":"north","unit":"degree"}]}}}`
