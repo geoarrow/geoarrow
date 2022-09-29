@@ -49,17 +49,21 @@ The terminology for array types in this section is based on the
 GeoArrow proposes a packed columnar data format for the fundamental geometry
 types, using packed coordinate and offset arrays to define geometry objects.
 
-The inner level is always a Struct array storing the
-coordinate values (`x: [x, x, x, x], y: [y, y, y, y]`, physically stored as
-one array per dimension with the name of each child array corresponding to
-the dimension it represents (i.e., x, y, z, or m). For any geometry type except
+The inner level is always an array of points. For any geometry type except
 Point, this inner level is nested in one or multiple
 [variable sized list](https://arrow.apache.org/docs/format/Columnar.html#variable-size-list-layout)
 arrays. In practice, this means we have additional arrays storing the offsets
 that denote where a new geometry, a new geometry part, or a new polygon ring
 starts.
 
-**Point**: `Struct<x: double, y: double, [z: double, [m: double>]]`
+This specification supports points encoded as a Struct array storing the
+coordinate values as separate arrays (i.e., `x: [x, x, ...], y: [y, y, y, ...]`)
+and a FixedSizeList of interleaved values (i.e., `[x, y, x, y, ...]`). As
+implementations evolve, this specification may grow to support other point
+representations or shrink to support only one if supporting multiple
+representations becomes a barrier to adoption.
+
+**Point (Struct)**: `Struct<x: double, y: double, [z: double, [m: double>]]`
 
 An array of Point geometries is stored as a Struct array containing two or more
 child double arrays with names corresponding to the dimension represented by
@@ -67,13 +71,23 @@ the child. The first and second child arrays must represent the x and y
 dimension; where z and m dimensions are both included, the z dimension must
 preceed the m dimension.
 
-**LineString**: `List<Struct<x: double, y: double, [z: double, [m: double>]]>`
+**Point (FixedSizeList)**: `FixedSizeList<double>[n_dim]`
+
+An array of point geometries may also be represented by a single array
+of interleaved coordinates. `n_dim` can be 2, 3, or 4 depending on the
+dimensionality of the geometries, and the field name of the list should
+be "xy", "xyz" or "xyzm", reflecting the dimensionality. Compared to
+the `Struct` representation of a point array, this representation may
+provide better performance for some operations and/or provide better
+compatability with the memory layout of existing libraries.
+
+**LineString**: `List<Point>`
 
 An array of LineStrings is represented as a nested list array with one
 level of outer nesting: each element of the array (LineString) is a
 list of xy vertices. The child name of the outer list should be "vertices".
 
-**Polygon**: `List<List<Struct<x: double, y: double, [z: double, [m: double>]]>>`
+**Polygon**: `List<List<Point>>`
 
 An array of Polygons is represented as a nested list array with two levels of
 outer nesting: each element of the array (Polygon) is a list of rings (the
@@ -81,13 +95,13 @@ first ring is the exterior ring, optional subsequent rings are interior
 rings), and each ring is a list of xy vertices. The child name of the outer
 list should be "rings"; the child name of the inner list should be "vertices".
 
-**MultiPoint**: `List<Struct<x: double, y: double, [z: double, [m: double>]]>`
+**MultiPoint**: `List<Point>`
 
 An array of MultiPoints is represented as a nested list array, where each outer
 list is a single MultiPoint (i.e. a list of xy coordinates). The child name of
 the outer `List` should be "points".
 
-**MultiLineString**: `List<List<Struct<x: double, y: double, [z: double, [m: double>]]>>`
+**MultiLineString**: `List<List<Point>>`
 
 An array of MultiLineStrings is represented as a nested list array with two
 levels of outer nesting: each element of the array (MultiLineString) is a
@@ -95,7 +109,7 @@ list of LineStrings, which consist itself of a list xy vertices (see above).
 The child name of the outer list should be "linestrings"; the child name of
 the inner list should be "vertices".
 
-**MultiPolygon**: `List<List<List<Struct<x: double, y: double, [z: double, [m: double>]]>>>`
+**MultiPolygon**: `List<List<List<Point>>>`
 
 An array of MultiPolygons is represented as a nested list array with three
 levels of outer nesting: each element of the array (MultiPolygon) is a list
@@ -160,7 +174,7 @@ interpretation is unambiguous (e.g., for xy and xyzm coordinate interpretations)
 
 ## Concrete examples of the memory layout
 
-**Point**
+**Point (Struct)**
 
 Arrow type: `Struct<x: double, y: double, [z: double, [m: double>]]`
 
@@ -181,9 +195,31 @@ Physical representation (buffers):
 * Coordinate x values: `[0.0, 0.0, 0.0]`
 * Coordinate y values: `[0.0, 1.0, 2.0]`
 
-**MultiPoint**
+**Point (FixedSizeList)**
 
-Arrow type: `List<Struct<x: double, y: double, [z: double, [m: double>]]>`
+Arrow type: `FixedSizeList<double>[2]`
+
+For an array of Point geometries, only a single array is used of interleaved
+coordinates. Since this is a fixed size list (each Point consists of 2
+coordinate values), a single array of length 2*N is sufficiently informative.
+
+Example of array with 3 points:
+
+WKT: `["POINT (0 0)", "POINT (0 1)", "POINT (0 2)"]`
+
+Logical representation:
+
+```
+[(0, 0), (0, 1), (0, 2)]
+```
+
+Physical representation (buffers):
+
+* Coordinates: `[0.0, 0.0, 0.0, 1.0, 0.0, 2.0]`
+
+**MultiPoint (FixedSizeList)**
+
+Arrow type: `List<FixedSizeList<double>[2]>`
 
 For an array of MultiPoint geometries, the coordinates are also stored in a
 single array of interleaved values (now with length >= 2*N). An additional
@@ -197,17 +233,18 @@ Logical representation:
 
 ```
 [
-    [{x: 0.0, y: 0.0}, {x: 0.0, y: 1.0}, {x: 0.0, y: 2.0}],
-    [{x: 1.0, y: 0.0}, {x: 1.0, y: 1.0}],
-    [{x: 2.0, y: 0.0}, {x: 2.0, y: 1.0}, {x: 2.0, y: 2.0}]
+    [(0.0, 0.0), (0.0, 1.0), (0.0, 2.0)],
+    [(1.0, 0.0), (1.0, 1.0)],
+    [(2.0, 0.0), (2.0, 1.0), (2.0, 2.0)]
 ]
 ```
 
 Physical representation (buffers):
 
-* Coordinate x values: `[0.0, 0.0, 0.0, 1.0, 1.0, 2.0, 2.0, 2.0]`
-* Coordinate y values: `[0.0, 1.0, 2.0, 0.0, 1.0, 0.0, 1.0, 2.0]`
+* Coordinates: `[0.0, 0.0, 0.0, 1.0, 0.0, 2.0, 1.0, 0.0, 1.0, 1.0, 2.0, 0.0, 2.0, 1.0, 2.0, 2.0]`
 * Geometry offsets: `[0, 3, 5, 8]`
+
+(Note: for offset into the coordinates array, you need the number of geometry offsets * 2 in the case of 2-dimensional data)
 
 **MultiLineString**
 
