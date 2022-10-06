@@ -49,45 +49,50 @@ The terminology for array types in this section is based on the
 GeoArrow proposes a packed columnar data format for the fundamental geometry
 types, using packed coordinate and offset arrays to define geometry objects.
 
-The inner level is always an array of points. For any geometry type except
+The inner level is always an array of coordinates. For any geometry type except
 Point, this inner level is nested in one or multiple
 [variable sized list](https://arrow.apache.org/docs/format/Columnar.html#variable-size-list-layout)
 arrays. In practice, this means we have additional arrays storing the offsets
 that denote where a new geometry, a new geometry part, or a new polygon ring
 starts.
 
-This specification supports points encoded as a Struct array storing the
+This specification supports coordinates encoded as a Struct array storing the
 coordinate values as separate arrays (i.e., `x: [x, x, ...], y: [y, y, y, ...]`)
 and a FixedSizeList of interleaved values (i.e., `[x, y, x, y, ...]`). As
-implementations evolve, this specification may grow to support other point
+implementations evolve, this specification may grow to support other coordinate
 representations or shrink to support only one if supporting multiple
 representations becomes a barrier to adoption.
 
-**Point (Struct)**: `Struct<x: double, y: double, [z: double, [m: double>]]`
+**Coordinate (Struct)**: `Struct<x: double, y: double, [z: double, [m: double>]]`
 
-An array of Point geometries is stored as a Struct array containing two or more
+An array of coordinates can be stored as a Struct array containing two or more
 child double arrays with names corresponding to the dimension represented by
 the child. The first and second child arrays must represent the x and y
 dimension; where z and m dimensions are both included, the z dimension must
 preceed the m dimension.
 
-**Point (FixedSizeList)**: `FixedSizeList<double>[n_dim]`
+**Coordinate (FixedSizeList)**: `FixedSizeList<double>[n_dim]`
 
 An array of point geometries may also be represented by a single array
 of interleaved coordinates. `n_dim` can be 2, 3, or 4 depending on the
 dimensionality of the geometries, and the field name of the list should
 be "xy", "xyz" or "xyzm", reflecting the dimensionality. Compared to
-the `Struct` representation of a point array, this representation may
+the `Struct` representation of a coordinate array, this representation may
 provide better performance for some operations and/or provide better
 compatability with the memory layout of existing libraries.
 
-**LineString**: `List<Point>`
+**Point**: `Coordinate`
+
+An array of point geometries is represented as an array of coordinates,
+which may be encoded according to either of the options above.
+
+**LineString**: `List<Coordinate>`
 
 An array of LineStrings is represented as a nested list array with one
 level of outer nesting: each element of the array (LineString) is a
 list of xy vertices. The child name of the outer list should be "vertices".
 
-**Polygon**: `List<List<Point>>`
+**Polygon**: `List<List<Coordinate>>`
 
 An array of Polygons is represented as a nested list array with two levels of
 outer nesting: each element of the array (Polygon) is a list of rings (the
@@ -95,13 +100,13 @@ first ring is the exterior ring, optional subsequent rings are interior
 rings), and each ring is a list of xy vertices. The child name of the outer
 list should be "rings"; the child name of the inner list should be "vertices".
 
-**MultiPoint**: `List<Point>`
+**MultiPoint**: `List<Coordinate>`
 
 An array of MultiPoints is represented as a nested list array, where each outer
 list is a single MultiPoint (i.e. a list of xy coordinates). The child name of
 the outer `List` should be "points".
 
-**MultiLineString**: `List<List<Point>>`
+**MultiLineString**: `List<List<Coordinate>>`
 
 An array of MultiLineStrings is represented as a nested list array with two
 levels of outer nesting: each element of the array (MultiLineString) is a
@@ -109,7 +114,7 @@ list of LineStrings, which consist itself of a list xy vertices (see above).
 The child name of the outer list should be "linestrings"; the child name of
 the inner list should be "vertices".
 
-**MultiPolygon**: `List<List<List<Point>>>`
+**MultiPolygon**: `List<List<List<Coordinate>>>`
 
 An array of MultiPolygons is represented as a nested list array with three
 levels of outer nesting: each element of the array (MultiPolygon) is a list
