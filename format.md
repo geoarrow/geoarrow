@@ -143,7 +143,7 @@ types, and it is planned to add a description of this later.
 
 ### Field and child names
 
-All geometries should name the fields and children as suggested for each geometry type,
+All geometry types should have fields and child names as suggested for each,
 however implementations must be able to ingest arrays with other names when the
 interpretation is unambiguous (e.g., for xy and xyzm coordinate interpretations).
 
