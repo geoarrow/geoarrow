@@ -62,8 +62,8 @@ starts.
 
 For an array of Point geometries, only a single array is used of interleaved
 coordinates. `n_dim` can be 2, 3, or 4 depending on the dimensionality of the
-geometries, and the field name of the list should be "xy", "xyz" or "xyzm",
-reflecting the dimensionality.
+geometries, and the field name of the list should be "xy", "xyz", "xym" or
+"xyzm", reflecting the coordinate interpretation.
 
 **LineString**: `List<FixedSizeList<double>[n_dim]>`
 
@@ -141,6 +141,11 @@ Polygon.
 Truly mixed geometry types can be supported as a union of the other geometry
 types, and it is planned to add a description of this later.
 
+### Field and child names
+
+All geometry types should have fields and child names as suggested for each,
+however implementations must be able to ingest arrays with other names when the
+interpretation is unambiguous (e.g., for xy and xyzm coordinate interpretations).
 
 ## Concrete examples of the memory layout
 
