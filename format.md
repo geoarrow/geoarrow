@@ -168,34 +168,16 @@ interpretation is unambiguous (e.g., for xy and xyzm coordinate interpretations)
 
 ## Concrete examples of the memory layout
 
-**Point (Struct)**
 
-Arrow type: `Struct<x: double, y: double>`
+**Point**
 
-For an array of Point geometries, one array per dimension is defined.
+Arrow type: `FixedSizeList<double>[2]` or `Struct<x: double, y: double>`
 
-Example of array with 3 points:
-
-WKT: `["POINT (0 0)", "POINT (0 1)", "POINT (0 2)"]`
-
-Logical representation:
-
-```
-[{x: 0, y: 0}, {x: 0, y: 1}, {x: 0, y: 2}]
-```
-
-Physical representation (buffers):
-
-* Coordinate x values: `[0.0, 0.0, 0.0]`
-* Coordinate y values: `[0.0, 1.0, 2.0]`
-
-**Point (FixedSizeList)**
-
-Arrow type: `FixedSizeList<double>[2]`
-
-For an array of Point geometries, only a single array is used of interleaved
-coordinates. Since this is a fixed size list (each Point consists of 2
-coordinate values), a single array of length 2*N is sufficiently informative.
+For an array of Point geometries, only a single coordinate array is used.
+If using a fixed size list coordinate representation, each Point will consist
+of 2 coordinate values and a single array of length 2*N is sufficiently informative.
+If using a struct coordinate representation, there will be one child array per
+dimension.
 
 Example of array with 3 points:
 
@@ -211,13 +193,17 @@ Physical representation (buffers):
 
 * Coordinates: `[0.0, 0.0, 0.0, 1.0, 0.0, 2.0]`
 
-**MultiPoint (FixedSizeList)**
+If using a struct coordinate representation:
 
-Arrow type: `List<FixedSizeList<double>[2]>`
+* Coordinate x values: `[0.0, 0.0, 0.0]`
+* Coordinate y values: `[0.0, 1.0, 2.0]`
 
-For an array of MultiPoint geometries, the coordinates are also stored in a
-single array of interleaved values (now with length >= 2*N). An additional
-array of offsets indicate where the vertices of each MultiPoint start.
+**MultiPoint**
+
+Arrow type: `List<FixedSizeList<double>[2]>` or `List<Struct<x: double, y: double>>`
+
+For an array of MultiPoint geometries, an additional array of offsets indicate
+where the vertices of each MultiPoint start.
 
 Example of array with 3 multipoints:
 
@@ -238,11 +224,16 @@ Physical representation (buffers):
 * Coordinates: `[0.0, 0.0, 0.0, 1.0, 0.0, 2.0, 1.0, 0.0, 1.0, 1.0, 2.0, 0.0, 2.0, 1.0, 2.0, 2.0]`
 * Geometry offsets: `[0, 3, 5, 8]`
 
-(Note: for offset into the coordinates array, you need the number of geometry offsets * 2 in the case of 2-dimensional data)
+For an interleaved coordinate representation, the coordinates buffer must contain
+the number of geometry offsets * 2 elements. If using a struct coordinate representation,
+the coordinates buffer would be replaced by two buffers containing coordinate x and
+coordinate y values.
+
 
 **MultiLineString**
 
-Arrow type: `List<List<Struct<x: double, y: double, [z: double, [m: double>]]>>`
+Arrow type: `List<List<FixedSizeList<double>[2]>>` or
+`List<List<Struct<x: double, y: double>>>`
 
 Example of array with 3 multilines:
 
@@ -260,25 +251,28 @@ Logical representation:
 
 ```
 [
-    [[{x: 0, y: 0}, {x: 0, y: 1}, {x: 0, y: 2}]],
+    [[(0, 0), (0, 1), (0, 2)]],
     [
-        [{x: 1, y: 0}, {x: 1, y: 1}, {x: 1, y: 2}],
-        [{x: 2, y: 0}, {x: 2, y: 1}, {x: 2, y: 2}]
+        [(1, 0), (1, 1)],
+        [(2, 0), (2, 1), (2, 2)]
     ],
-    [[{x: 3, y: 0}, {x: 3, y: 1}, {x: 3, y: 2}]],
+    [[(3, 0), (3, 1)]],
 ]
 ```
 
 Physical representation (buffers):
 
-* Coordinate x values: `[0.0, 0.0, 0.0, 1.0, 1.0, 2.0, 2.0, 2.0, 3.0, 3.0]`
-* Coordinate y values: `[0.0, 1.0, 2.0, 0.0, 1.0, 0.0, 1.0, 2.0, 0.0, 1.0]`
+* Coordinates: `[0.0, 0.0, 0.0, 1.0, 0.0, 2.0, 1.0, 0.0, 1.0, 1.0, 2.0, 0.0, 2.0, 1.0, 2.0, 2.0, 3.0, 0.0, 3.0, 1.0]`
 * Part offsets (linestrings): `[0, 3, 5, 8, 10]`
 * Geometry offsets: `[0, 1, 3, 4]`
 
+If using a struct coordinate representation, the coordinates buffer would be replaced
+by two buffers containing coordinate x and coordinate y values.
+
 **MultiPolygon**
 
-Arrow type: `List<List<List<Struct<x: double, y: double, [z: double, [m: double>]]>>>`
+Arrow type: `List<List<List<FixedSizeList<double>[2]>>>`  or
+`List<List<List<Struct<x: double, y: double>>>>`
 
 Example of array with 3 points:
 
@@ -299,26 +293,26 @@ Logical representation:
     # MultiPolygon 1
     [
         [
-            [{x: 40, y: 40}, {x: 20, y: 45}, {x: 45, y: 30}, {x: 40, y: 40}]
+            [[40, 40], [20, 45], [45, 30], [40, 40]]
         ],
         [
-            [{x: 20, y: 35}, {x: 10, y: 30}, {x: 10, y: 10}, {x: 30, y: 5}, {x: 45, y: 20}, {x: 20, y: 35}],
-            [{x: 30, y: 20}, {x: 20, y: 15}, {x: 20, y: 25}, {x: 30, y: 20}]
+            [[20, 35], [10, 30], [10, 10], [30, 5], [45, 20], [20, 35]],
+            [[30, 20], [20, 15], [20, 25], [30, 20]]
         ]
     ],
     # MultiPolygon 2 (using an additional level of nesting to turn the Polygon into a MultiPolygon with one part)
     [
         [
-            [{x: 30, y: 10}, {x: 40, y: 40}, {x: 20, y: 40}, {x: 10, y: 20}, {x: 30, y: 10}]
+            [[30, 10], [40, 40], [20, 40], [10, 20], [30, 10]]
         ]
     ],
     # MultiPolygon 3
     [
         [
-            [{x: 30, y: 20}, {x: 45, y: 40}, {x: 10, y: 40}, {x: 30, y: 20}]
+            [[30, 20], [45, 40], [10, 40], [30, 20]]
         ],
         [
-            [{x: 15, y: 5}, {x: 40, y: 10}, {x: 10, y: 20}, {x: 5, y: 10}, {x: 15, y: 5}]
+            [[15, 5], [40, 10], [10, 20], [5, 10], [15, 5]]
         ]
     ]
 ]
@@ -326,8 +320,10 @@ Logical representation:
 
 Physical representation (buffers):
 
-* Coordinate x values: `[40.0, 20.0, 45.0, 40.0, 20.0, 10.0, 10.0, 30.0, 45.0, 20.0, 30.0, 20.0, 20.0, 30.0, 30.0, 40.0, 20.0, 10.0, 30.0, 30.0, 45.0, 10.0, 30.0, 15.0, 40.0, 10.0, 5.0, 15.0]`
-* Coordinate y values: `[40.0, 45.0, 30.0, 40.0, 35.0, 30.0, 10.0, 5.0, 20.0, 35.0, 20.0, 15.0, 25.0, 20.0, 10.0, 40.0, 40.0, 20.0, 10.0, 20.0, 40.0, 40.0, 20.0, 5.0, 10.0, 20.0, 10.0, 5.0]`
+* Coordinates: `[40.0, 40.0, 20.0, 45.0, 45.0, 30.0, 40.0, 40.0, 20.0, 35.0, 10.0, 30.0, 10.0, 10.0, 30.0, 5.0, 45.0, 20.0, 20.0, 35.0, 30.0, 20.0, 20.0, 15.0, 20.0, 25.0, 30.0, 20.0, 30.0, 10.0, 40.0, 40.0, 20.0, 40.0, 10.0, 20.0, 30.0, 10.0, 30.0, 20.0, 45.0, 40.0, 10.0, 40.0, 30.0, 20.0, 15.0, 5.0, 40.0, 10.0, 10.0, 20.0, 5.0, 10.0, 15.0, 5.0]`
 * Ring offsets: `[0, 4, 10, 14, 19, 23, 28]`
 * Part offsets (polygons): `[0, 1, 3, 4, 5, 6]`
 * Geometry offsets: `[0, 2, 3, 5]`
+
+If using a struct coordinate representation, the coordinates buffer would be replaced
+by two buffers containing coordinate x and coordinate y values.
