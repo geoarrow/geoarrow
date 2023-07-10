@@ -71,9 +71,9 @@ the child. The first and second child arrays must represent the x and y
 dimension; where z and m dimensions are both included, the z dimension must
 preceed the m dimension.
 
-**Coordinate (FixedSizeList)**: `FixedSizeList<double>[n_dim]`
+**Coordinate (interleaved)**: `FixedSizeList<double>[n_dim]`
 
-An array of point geometries may also be represented by a single array
+An array of coordinates may also be represented by a single array
 of interleaved coordinates. `n_dim` can be 2, 3, or 4 depending on the
 dimensionality of the geometries, and the field name of the list should
 be "xy", "xyz" or "xyzm", reflecting the dimensionality. Compared to
@@ -181,7 +181,7 @@ interpretation is unambiguous (e.g., for xy and xyzm coordinate interpretations)
 
 **Point (Struct)**
 
-Arrow type: `Struct<x: double, y: double, [z: double, [m: double>]]`
+Arrow type: `Struct<x: double, y: double>`
 
 For an array of Point geometries, one array per dimension is defined.
 
