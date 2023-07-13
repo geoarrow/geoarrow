@@ -63,7 +63,7 @@ implementations evolve, this specification may grow to support other coordinate
 representations or shrink to support only one if supporting multiple
 representations becomes a barrier to adoption.
 
-**Coordinate (Struct)**: `Struct<x: double, y: double, [z: double, [m: double>]]`
+**Coordinate (separated)**: `Struct<x: double, y: double, [z: double, [m: double>]]`
 
 An array of coordinates can be stored as a Struct array containing two or more
 child double arrays with names corresponding to the dimension represented by
