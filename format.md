@@ -124,6 +124,27 @@ is a list of xy vertices. The child name of the outer list should be "polygons";
 the child name of the middle list should be "rings"; the child name of the
 inner list should be "vertices".
 
+**Well-known binary (WKB)**: `Binary` or `LargeBinary` or `FixedSizeBinary`
+
+It may be useful for implementations that already have facilities to read
+and/or write well-known binary (WKB) to store features in this form without
+modification. When well-known binary is stored in an Arrow array, it should
+follow the convensions defined in the
+[GeoParquet specification](https://github.com/opengeospatial/geoparquet).
+Notably, it should use the ISO form instead of EWKB when Z or M dimensions
+are included and axis order is defined as easting, northing/longitude, latitude
+regardless of the order specified by the coordinate system. Producers may store
+EWKB or invalid WKB in a GeoArrow WKB array and consumers may error if they
+encounter unsupported or invalid WKB.
+
+**Well-known text (WKT)**: `Utf8` or `LargeUtf8`
+
+It may be useful for implementations that already have facilities to read
+and/or write well-known binary (WKT) to store features in this form without
+modification. It should follow as closely as possible the specifications
+for WKB arrays (e.g., axis order is defined as easting, northing/longitude,
+latitude).
+
 ### Missing values (nulls)
 
 Arrow supports missing values through a validity bitmap, and for nested data
