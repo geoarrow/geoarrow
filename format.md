@@ -43,8 +43,17 @@ record-oriented, while Arrow is column-oriented.
 
 ## Format
 
+The GeoArrow specification provides both a packed native columnar format encoding
+and a set of serialized encodings. As explained above, there are many advantages
+to storing data in the columnar encoing; however, many potential producers of
+geospatial data (e.g., database drivers, file readers) do not have a full
+geospatial stack at their disposal. The serialized encodings are provided to
+accomodate these producers and ensure critical metadata (e.g., CRS) is not lost.
+
 The terminology for array types in this section is based on the
 [Arrow Columnar Format specification](https://arrow.apache.org/docs/format/Columnar.html).
+
+### Native encodings
 
 GeoArrow proposes a packed columnar data format for the fundamental geometry
 types, using packed coordinate and offset arrays to define geometry objects.
@@ -123,6 +132,8 @@ exterior ring, optional subsequent rings are interior rings), and each ring
 is a list of xy vertices. The child name of the outer list should be "polygons";
 the child name of the middle list should be "rings"; the child name of the
 inner list should be "vertices".
+
+### Serialized encodings
 
 **Well-known binary (WKB)**: `Binary` or `LargeBinary` or `FixedSizeBinary`
 
