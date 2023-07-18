@@ -140,7 +140,7 @@ inner list should be "vertices".
 It may be useful for implementations that already have facilities to read
 and/or write well-known binary (WKB) to store features in this form without
 modification. When well-known binary is stored in an Arrow array, it should
-follow the convensions defined in the
+follow the conventions defined in the
 [GeoParquet specification](https://github.com/opengeospatial/geoparquet).
 Notably, it should use the ISO form instead of EWKB when Z or M dimensions
 are included and axis order is defined as easting, northing/longitude, latitude
