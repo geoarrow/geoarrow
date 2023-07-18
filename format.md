@@ -143,7 +143,7 @@ modification. When well-known binary is stored in an Arrow array, it should
 follow the conventions defined in the
 [GeoParquet specification](https://github.com/opengeospatial/geoparquet).
 Notably, it should use the ISO form instead of EWKB when Z or M dimensions
-are included and axis order is defined as easting, northing/longitude, latitude
+are included and axis order is defined as easting, northing or longitude, latitude
 regardless of the order specified by the coordinate system. Producers may store
 EWKB or invalid WKB in a GeoArrow WKB array and consumers may error if they
 encounter unsupported or invalid WKB.
