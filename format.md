@@ -16,7 +16,12 @@ languages. The Arrow columnar memory model is suited to store both vector
 features and its attribute data. This document specifies how such vector
 features can be stored in Arrow (and Arrow-compatible) data structures.
 
-## Motivation
+The terminology for array types in this document is based on the
+[Arrow Columnar Format specification](https://arrow.apache.org/docs/format/Columnar.html).
+
+## Native encoding
+
+### Motivation
 
 Standard ways to represent or serialize vector geometries include WKT (e.g.
 "POINT (0 0)"), WKB and GeoJSON. Each of those representations have a
@@ -40,20 +45,6 @@ interpret as actual geometries.
 
 [FlatGeoBuf](https://flatgeobuf.org/) is similar on various aspects, but is
 record-oriented, while Arrow is column-oriented.
-
-## Format
-
-The GeoArrow specification provides both a packed native columnar format encoding
-and a set of serialized encodings. As explained above, there are many advantages
-to storing data in the columnar encoing; however, many potential producers of
-geospatial data (e.g., database drivers, file readers) do not have a full
-geospatial stack at their disposal. The serialized encodings are provided to
-accomodate these producers and ensure critical metadata (e.g., CRS) is not lost.
-
-The terminology for array types in this section is based on the
-[Arrow Columnar Format specification](https://arrow.apache.org/docs/format/Columnar.html).
-
-### Native encodings
 
 GeoArrow proposes a packed columnar data format for the fundamental geometry
 types, using packed coordinate and offset arrays to define geometry objects.
@@ -133,28 +124,36 @@ is a list of xy vertices. The child name of the outer list should be "polygons";
 the child name of the middle list should be "rings"; the child name of the
 inner list should be "vertices".
 
-### Serialized encodings
+## Serialized encodings
 
-**Well-known binary (WKB)**: `Binary` or `LargeBinary` or `FixedSizeBinary`
+### Motivation
+
+Whereas there are many advantages to storing data in the native encoding,
+many producers of geospatial data (e.g., database drivers, file readers)
+do not have a full geospatial stack at their disposal. The serialized encodings
+are provided to accomodate these producers and provide every opportunity to
+propagate critical metadata (e.g., CRS).
+
+**Well-known binary (WKB)**: `Binary` or `LargeBinary`
 
 It may be useful for implementations that already have facilities to read
 and/or write well-known binary (WKB) to store features in this form without
-modification. When well-known binary is stored in an Arrow array, it should
-follow the conventions defined in the
-[GeoParquet specification](https://github.com/opengeospatial/geoparquet).
-Notably, it should use the ISO form instead of EWKB when Z or M dimensions
-are included and axis order is defined as easting, northing or longitude, latitude
-regardless of the order specified by the coordinate system. Producers may store
-EWKB or invalid WKB in a GeoArrow WKB array and consumers may error if they
-encounter unsupported or invalid WKB.
+modification. For maximum compatibility producers should write ISO-flavoured
+WKB where possible; however, either EWKB or ISO flavoured WKB is permitted.
+
+The Arrow `Binary` type is composed of two buffers: a buffer
+of `int32` offsets and a `char` data buffer. The `LargeBinary` type is
+composed of an `int64` offset buffer and a `uint8` data buffer.
 
 **Well-known text (WKT)**: `Utf8` or `LargeUtf8`
 
 It may be useful for implementations that already have facilities to read
 and/or write well-known binary (WKT) to store features in this form without
-modification. It should follow as closely as possible the specifications
-for WKB arrays (e.g., axis order is defined as easting, northing/longitude,
-latitude).
+modification.
+
+The Arrow `Utf8` type is composed of two buffers: a buffer
+of `int32` offsets and a `char` data buffer. The `LargeUtf8` type is composed of
+an `int64` offset buffer and a `char` data buffer.
 
 ### Missing values (nulls)
 
@@ -168,36 +167,43 @@ In practice this means you can have a missing geometry, but not a geometry
 with a null part or null (co)ordinate (for example, a polygon with a null
 ring or a point with a null x value).
 
+## Additional considerations
+
 ### Empty geometries
 
-Except for Points, empty geometries can be faithfully represented as an
-empty inner list.
+Except for Points, empty geometries in a native encoding can be faithfully
+represented as an empty inner list.
 
 Empty points can be represented as `POINT (NaN NaN)`.
 
 ### GeometryCollection
 
-GeometryCollections are not yet included in the format description above,
-but it is planned to add this later. GeometryCollections can be represented
-using a [union type](https://arrow.apache.org/docs/format/Columnar.html#union-layout)
-of the other geometry types.
+GeometryCollection features containing mixed geometry types cannot yet be
+represented using a native encoding. GeometryCollection features can be
+represented using a serialized encoding (e.g., WKB) and future support
+is planned using an
+[Arrow union type](https://arrow.apache.org/docs/format/Columnar.html#union-layout)
+of native encodings.
 
 ### Mixed Geometry types
 
-When having mixed single and multi geometries of the same type (for example,
-Polygon and MultiPolygon), those can be stored together in a MultiPolygon
-layout, with the convention that a length-1 MultiPolygon represents a
-Polygon.
+Arrays containing features with mixed geometry types cannot yet be
+represented using a native encoding. Arrays with mixed geometry types
+can be represented using a serialized encoding (e.g., WKB) and future
+support is planned using an
+[Arrow union type](https://arrow.apache.org/docs/format/Columnar.html#union-layout)
+of native encodings.
 
-Truly mixed geometry types can be supported as a union of the other geometry
-types, and it is planned to add a description of this later.
+Note that single and multi geometries of the same type (for example,
+Polygon and MultiPolygon) can be stored together in a Multi encoding
+(e.g., MultiPolygon).
 
 ### Field and child names
 
-All geometry types should have fields and child names as suggested for each,
-however implementations must be able to ingest arrays with other names when the
-interpretation is unambiguous (e.g., for xy and xyzm interleaved coordinate
-interpretations).
+All geometry types that contain field names should have field and child names
+as suggested for each; however, implementations must be able to ingest arrays
+with other names when the interpretation is unambiguous (e.g., for xy and
+xyzm interleaved coordinate interpretations).
 
 ## Concrete examples of the memory layout
 
@@ -360,3 +366,28 @@ Physical representation (buffers):
 
 If using a struct coordinate representation, the coordinates buffer would be replaced
 by two buffers containing coordinate x and coordinate y values.
+
+**WKT**
+
+Arrow type: `Utf8`
+
+For an array of WKT geometries, a buffer of offsets indicate where the text of each
+feature begins.
+
+Example of array with 2 features:
+
+WKT: `["MULTIPOINT (0 0, 0 1)", "POINT (30 10)"]`
+
+Logical representation:
+
+```
+[
+    "MULTIPOINT (0 0, 0 1)",
+    "POINT (30 10)"
+]
+```
+
+Physical representation (buffers):
+
+* Data: `b"MULTIPOINT (0 0, 0 1)POINT (30 10)"`
+* Feature offsets: `[0, 21, 46]`
