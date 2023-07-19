@@ -124,37 +124,6 @@ is a list of xy vertices. The child name of the outer list should be "polygons";
 the child name of the middle list should be "rings"; the child name of the
 inner list should be "vertices".
 
-## Serialized encodings
-
-### Motivation
-
-Whereas there are many advantages to storing data in the native encoding,
-many producers of geospatial data (e.g., database drivers, file readers)
-do not have a full geospatial stack at their disposal. The serialized encodings
-are provided to accomodate these producers and provide every opportunity to
-propagate critical metadata (e.g., CRS).
-
-**Well-known binary (WKB)**: `Binary` or `LargeBinary`
-
-It may be useful for implementations that already have facilities to read
-and/or write well-known binary (WKB) to store features in this form without
-modification. For maximum compatibility producers should write ISO-flavoured
-WKB where possible; however, either EWKB or ISO flavoured WKB is permitted.
-
-The Arrow `Binary` type is composed of two buffers: a buffer
-of `int32` offsets and a `char` data buffer. The `LargeBinary` type is
-composed of an `int64` offset buffer and a `uint8` data buffer.
-
-**Well-known text (WKT)**: `Utf8` or `LargeUtf8`
-
-It may be useful for implementations that already have facilities to read
-and/or write well-known binary (WKT) to store features in this form without
-modification.
-
-The Arrow `Utf8` type is composed of two buffers: a buffer
-of `int32` offsets and a `char` data buffer. The `LargeUtf8` type is composed of
-an `int64` offset buffer and a `char` data buffer.
-
 ### Missing values (nulls)
 
 Arrow supports missing values through a validity bitmap, and for nested data
@@ -166,8 +135,6 @@ fields can be marked explicitly as non-nullable, but this is not required.
 In practice this means you can have a missing geometry, but not a geometry
 with a null part or null (co)ordinate (for example, a polygon with a null
 ring or a point with a null x value).
-
-## Additional considerations
 
 ### Empty geometries
 
@@ -204,6 +171,37 @@ All geometry types that contain field names should have field and child names
 as suggested for each; however, implementations must be able to ingest arrays
 with other names when the interpretation is unambiguous (e.g., for xy and
 xyzm interleaved coordinate interpretations).
+
+## Serialized encodings
+
+### Motivation
+
+Whereas there are many advantages to storing data in the native encoding,
+many producers of geospatial data (e.g., database drivers, file readers)
+do not have a full geospatial stack at their disposal. The serialized encodings
+are provided to accomodate these producers and provide every opportunity to
+propagate critical metadata (e.g., CRS).
+
+**Well-known binary (WKB)**: `Binary` or `LargeBinary`
+
+It may be useful for implementations that already have facilities to read
+and/or write well-known binary (WKB) to store features in this form without
+modification. For maximum compatibility producers should write ISO-flavoured
+WKB where possible; however, either EWKB or ISO flavoured WKB is permitted.
+
+The Arrow `Binary` type is composed of two buffers: a buffer
+of `int32` offsets and a `char` data buffer. The `LargeBinary` type is
+composed of an `int64` offset buffer and a `uint8` data buffer.
+
+**Well-known text (WKT)**: `Utf8` or `LargeUtf8`
+
+It may be useful for implementations that already have facilities to read
+and/or write well-known binary (WKT) to store features in this form without
+modification.
+
+The Arrow `Utf8` type is composed of two buffers: a buffer
+of `int32` offsets and a `char` data buffer. The `LargeUtf8` type is composed of
+an `int64` offset buffer and a `char` data buffer.
 
 ## Concrete examples of the memory layout
 
