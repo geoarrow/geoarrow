@@ -191,7 +191,7 @@ WKB where possible; however, consumers may accept EWKB or ISO flavoured WKB.
 Consumers may ignore any embedded SRID values in EWKB.
 
 The Arrow `Binary` type is composed of two buffers: a buffer
-of `int32` offsets and a `char` data buffer. The `LargeBinary` type is
+of `int32` offsets and a `uint8` data buffer. The `LargeBinary` type is
 composed of an `int64` offset buffer and a `uint8` data buffer.
 
 **Well-known text (WKT)**: `Utf8` or `LargeUtf8`
