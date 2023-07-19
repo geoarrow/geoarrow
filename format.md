@@ -187,7 +187,8 @@ propagate critical metadata (e.g., CRS).
 It may be useful for implementations that already have facilities to read
 and/or write well-known binary (WKB) to store features in this form without
 modification. For maximum compatibility producers should write ISO-flavoured
-WKB where possible; however, either EWKB or ISO flavoured WKB is permitted.
+WKB where possible; however, consumers may accept EWKB or ISO flavoured WKB.
+Consumers may ignore any embedded SRID values in EWKB.
 
 The Arrow `Binary` type is composed of two buffers: a buffer
 of `int32` offsets and a `char` data buffer. The `LargeBinary` type is
