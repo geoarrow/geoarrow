@@ -46,6 +46,8 @@ interpret as actual geometries.
 [FlatGeoBuf](https://flatgeobuf.org/) is similar on various aspects, but is
 record-oriented, while Arrow is column-oriented.
 
+### Memory layouts
+
 GeoArrow proposes a packed columnar data format for the fundamental geometry
 types, using packed coordinate and offset arrays to define geometry objects.
 
@@ -138,43 +140,41 @@ ring or a point with a null x value).
 
 ### Empty geometries
 
-Except for Points, empty geometries in a native encoding can be faithfully
-represented as an empty inner list.
+Except for Points, empty geometries can be faithfully represented as an
+empty inner list.
 
 Empty points can be represented as `POINT (NaN NaN)`.
 
 ### GeometryCollection
 
-GeometryCollection features containing mixed geometry types cannot yet be
-represented using a native encoding. GeometryCollection features can be
-represented using a serialized encoding (e.g., WKB) and future support
-is planned using an
-[Arrow union type](https://arrow.apache.org/docs/format/Columnar.html#union-layout)
-of native encodings.
+GeometryCollection features cannot yet be represented using a native encoding. Future
+support is planned using an
+[Arrow union type](https://arrow.apache.org/docs/format/Columnar.html#union-layout).
+
+GeometryCollection features can be represented using a serialized encoding (WKB or WKT),
+see below.
 
 ### Mixed Geometry types
 
-Arrays containing features with mixed geometry types cannot yet be
-represented using a native encoding. Arrays with mixed geometry types
-can be represented using a serialized encoding (e.g., WKB) and future
-support is planned using an
-[Arrow union type](https://arrow.apache.org/docs/format/Columnar.html#union-layout)
-of native encodings.
+Arrays containing features of mixed geometry types cannot yet be represented using a
+native encoding. Future support is planned using an
+[Arrow union type](https://arrow.apache.org/docs/format/Columnar.html#union-layout).
 
-Note that single and multi geometries of the same type (for example,
-Polygon and MultiPolygon) can be stored together in a Multi encoding
-(e.g., MultiPolygon).
+Note that single and multi geometries of the same type can be stored together in a Multi
+encoding. For example, a mix of Polygon and MultiPolygon can be stored as MultiPolygons,
+with a Polygon being represented as a length-1 MultiPolygon.
+
+Arrays with mixed geometry types can be represented using a serialized encoding (WKB or
+WKT), see below.
 
 ### Field and child names
 
-All geometry types that contain field names should have field and child names
-as suggested for each; however, implementations must be able to ingest arrays
-with other names when the interpretation is unambiguous (e.g., for xy and
-xyzm interleaved coordinate interpretations).
+All geometry types should have field and child names as suggested for each;
+however, implementations must be able to ingest arrays with other names when the
+interpretation is unambiguous (e.g., for xy and xyzm interleaved coordinate
+interpretations).
 
 ## Serialized encodings
-
-### Motivation
 
 Whereas there are many advantages to storing data in the native encoding,
 many producers of geospatial data (e.g., database drivers, file readers)
@@ -197,7 +197,7 @@ composed of an `int64` offset buffer and a `uint8` data buffer.
 **Well-known text (WKT)**: `Utf8` or `LargeUtf8`
 
 It may be useful for implementations that already have facilities to read
-and/or write well-known binary (WKT) to store features in this form without
+and/or write well-known text (WKT) to store features in this form without
 modification.
 
 The Arrow `Utf8` type is composed of two buffers: a buffer
