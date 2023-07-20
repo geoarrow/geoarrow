@@ -1,4 +1,4 @@
-# Metadata Schema - Version 0.1.0
+# Metadata Schema - Version 0.1.1
 
 In order to ensure interoperability between implementations of the Arrow in-memory format
 and associated storage formats such as Parquet and Feather, it is necessary to
@@ -44,7 +44,7 @@ with the following content, keyed by the column name:
 ```python
 "<column_name>": {
     "bbox": [<xmin>, <ymin>, (zmin), <xmax>, <ymax>, (zmax)],  # OPTIONAL
-    "crs": "<WKT representation of CRS>",  # REQUIRED
+    "crs": "<WKT or WKID representation of CRS>",  # REQUIRED
     "encoding": "WKB",  # REQUIRED
 }
 ```
@@ -68,8 +68,8 @@ The `crs` key must always be present.
 The value of this key may be `null` to indicate that there is no CRS assigned
 to this column.
 
-If non-null, CRS information must be encoded using Well-Known Text
-([WKT](https://proj.org/faq.html#what-is-the-best-format-for-describing-coordinate-reference-systems)).
+If non-null, CRS information must be encoded using Well-Known Text or Well known ID (WKID)
+([WKT](https://proj.org/faq.html#what-is-the-best-format-for-describing-coordinate-reference-systems)) and ([WKID](http://wiki.gis.com/wiki/index.php/Well-Known_ID)).
 
 Multiple dialects of WKT exist, including:
 
@@ -78,7 +78,7 @@ Multiple dialects of WKT exist, including:
 -   WKT2:2015 (ISO 19162:2015)
 -   WKT2:2018 (ISO 19162:2018)
 
-Any WKT encoding used must be supported by the
+Any WKT encoding used should be supported by the
 [Proj](https://proj.org/index.html) library.
 
 ## Geometry encoding
@@ -95,7 +95,7 @@ Other dialects of WKB, such as EWKB, are not currently supported under this sche
 
 Other encodings may be introduced in future versions of this schema.
 
-## Example
+## Example: WKT Spatial Reference
 
 ```json
 "geo": {
@@ -108,9 +108,28 @@ Other encodings may be introduced in future versions of this schema.
     },
     "creator": {
         "library": "geopandas",
-        "version": "0.7.0",
+        "version": "0.7.1",
     },
     "primary_column": "geometry",
-    "version": "0.1.0"
+    "version": "0.1.1"
+}
+```
+
+## Example 2: WKID Spatial Reference
+```json
+"geo": {
+    "columns": {
+        "geometry": {
+            "bbox": [-180, -80, 180, 80],
+            "crs": "4326",
+            "encoding": "WKB",
+        }
+    },
+    "creator": {
+        "library": "geopandas",
+        "version": "0.7.1",
+    },
+    "primary_column": "geometry",
+    "version": "0.1.1"
 }
 ```
