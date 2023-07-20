@@ -16,7 +16,12 @@ languages. The Arrow columnar memory model is suited to store both vector
 features and its attribute data. This document specifies how such vector
 features can be stored in Arrow (and Arrow-compatible) data structures.
 
-## Motivation
+The terminology for array types in this document is based on the
+[Arrow Columnar Format specification](https://arrow.apache.org/docs/format/Columnar.html).
+
+## Native encoding
+
+### Motivation
 
 Standard ways to represent or serialize vector geometries include WKT (e.g.
 "POINT (0 0)"), WKB and GeoJSON. Each of those representations have a
@@ -41,10 +46,7 @@ interpret as actual geometries.
 [FlatGeoBuf](https://flatgeobuf.org/) is similar on various aspects, but is
 record-oriented, while Arrow is column-oriented.
 
-## Format
-
-The terminology for array types in this section is based on the
-[Arrow Columnar Format specification](https://arrow.apache.org/docs/format/Columnar.html).
+### Memory layouts
 
 GeoArrow proposes a packed columnar data format for the fundamental geometry
 types, using packed coordinate and offset arrays to define geometry objects.
@@ -145,27 +147,62 @@ Empty points can be represented as `POINT (NaN NaN)`.
 
 ### GeometryCollection
 
-GeometryCollections are not yet included in the format description above,
-but it is planned to add this later. GeometryCollections can be represented
-using a [union type](https://arrow.apache.org/docs/format/Columnar.html#union-layout)
-of the other geometry types.
+GeometryCollection features cannot yet be represented using a native encoding. Future
+support is planned using an
+[Arrow union type](https://arrow.apache.org/docs/format/Columnar.html#union-layout).
+
+GeometryCollection features can be represented using a serialized encoding (WKB or WKT),
+see below.
 
 ### Mixed Geometry types
 
-When having mixed single and multi geometries of the same type (for example,
-Polygon and MultiPolygon), those can be stored together in a MultiPolygon
-layout, with the convention that a length-1 MultiPolygon represents a
-Polygon.
+Arrays containing features of mixed geometry types cannot yet be represented using a
+native encoding. Future support is planned using an
+[Arrow union type](https://arrow.apache.org/docs/format/Columnar.html#union-layout).
 
-Truly mixed geometry types can be supported as a union of the other geometry
-types, and it is planned to add a description of this later.
+Note that single and multi geometries of the same type can be stored together in a Multi
+encoding. For example, a mix of Polygon and MultiPolygon can be stored as MultiPolygons,
+with a Polygon being represented as a length-1 MultiPolygon.
+
+Arrays with mixed geometry types can be represented using a serialized encoding (WKB or
+WKT), see below.
 
 ### Field and child names
 
-All geometry types should have fields and child names as suggested for each,
-however implementations must be able to ingest arrays with other names when the
+All geometry types should have field and child names as suggested for each;
+however, implementations must be able to ingest arrays with other names when the
 interpretation is unambiguous (e.g., for xy and xyzm interleaved coordinate
 interpretations).
+
+## Serialized encodings
+
+Whereas there are many advantages to storing data in the native encoding,
+many producers of geospatial data (e.g., database drivers, file readers)
+do not have a full geospatial stack at their disposal. The serialized encodings
+are provided to accomodate these producers and provide every opportunity to
+propagate critical metadata (e.g., CRS).
+
+**Well-known binary (WKB)**: `Binary` or `LargeBinary`
+
+It may be useful for implementations that already have facilities to read
+and/or write well-known binary (WKB) to store features in this form without
+modification. For maximum compatibility producers should write ISO-flavoured
+WKB where possible; however, consumers may accept EWKB or ISO flavoured WKB.
+Consumers may ignore any embedded SRID values in EWKB.
+
+The Arrow `Binary` type is composed of two buffers: a buffer
+of `int32` offsets and a `uint8` data buffer. The `LargeBinary` type is
+composed of an `int64` offset buffer and a `uint8` data buffer.
+
+**Well-known text (WKT)**: `Utf8` or `LargeUtf8`
+
+It may be useful for implementations that already have facilities to read
+and/or write well-known text (WKT) to store features in this form without
+modification.
+
+The Arrow `Utf8` type is composed of two buffers: a buffer
+of `int32` offsets and a `char` data buffer. The `LargeUtf8` type is composed of
+an `int64` offset buffer and a `char` data buffer.
 
 ## Concrete examples of the memory layout
 
@@ -328,3 +365,28 @@ Physical representation (buffers):
 
 If using a struct coordinate representation, the coordinates buffer would be replaced
 by two buffers containing coordinate x and coordinate y values.
+
+**WKT**
+
+Arrow type: `Utf8`
+
+For an array of WKT geometries, a buffer of offsets indicate where the text of each
+feature begins.
+
+Example of array with 2 features:
+
+WKT: `["MULTIPOINT (0 0, 0 1)", "POINT (30 10)"]`
+
+Logical representation:
+
+```
+[
+    "MULTIPOINT (0 0, 0 1)",
+    "POINT (30 10)"
+]
+```
+
+Physical representation (buffers):
+
+* Data: `b"MULTIPOINT (0 0, 0 1)POINT (30 10)"`
+* Feature offsets: `[0, 21, 46]`
