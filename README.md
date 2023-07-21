@@ -1,6 +1,6 @@
 # GeoArrow - geospatial data with Apache Arrow
 
-Specifications for storing geospatial data in Apache Arrow and Apache Parquet.
+Specifications for storing geospatial data in Apache Arrow.
 
 The [Apache Arrow](https://arrow.apache.org/) project specifies a standardized
 language-independent columnar memory format. It enables shared computational libraries,
@@ -22,7 +22,7 @@ their attribute data. The GeoArrow specification defines how the vector features
 
 This repository contains the specifications for:
 
-- The memory layout for storing geometries natively in an Arrow field ([format.md](./format.md))
+- The memory layout for storing geometries in an Arrow field ([format.md](./format.md))
 - The Arrow extension type definitions ([extension-types.md](./extension-types.md))
 
 Defining a standard and efficient way to store geospatial data in the Arrow memory
@@ -43,10 +43,11 @@ The goal of this repository is to discuss and move towards specifications
 on metadata and memory layout for storing geospatial data in the Arrow memory
 layout or related formats.
 
-Relationship with GeoParquet: the GeoParquet specification originally started in this
-repo, but was moved out into its own repo
-(https://github.com/opengeospatial/geoparquet), leaving this repo to focus on the
-Arrow-specific specifications (Arrow layout and extension type metadata).
+### Relationship with GeoParquet
+
+The GeoParquet specification originally started in this repo, but was moved out into its
+own repo (https://github.com/opengeospatial/geoparquet), leaving this repo to focus on
+the Arrow-specific specifications (Arrow layout and extension type metadata).
 
 ## Implementations
 
