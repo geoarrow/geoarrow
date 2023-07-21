@@ -8,16 +8,16 @@ zero-copy shared memory and streaming messaging, interprocess communication, etc
 supported by many programming languages and data libraries.
 
 Spatial information can be represented as a collection of discrete objects using points,
-lines and polygons, i.e. vector data. The
+lines and polygons (i.e., vector data). The
 [Simple Feature Access](https://www.ogc.org/standards/sfa) standard provides a widely
 used abstraction, defining a set of geometries: Point, LineString, Polygon, MultiPoint,
 MultiLineString, MultiPolygon, GeometryCollection. Next to a geometry, simple features
 can also have non-spatial attributes that describe the feature.
 
-Geospatial data often comes in tabular format, with one (or multiple) column with
+Geospatial data often comes in tabular format, with one or more columns with
 feature geometries and additional columns with feature attributes. The Arrow columnar
 memory model is therefore perfectly suited to store such data, both vector features and
-its attribute data. The GeoArrow specification is about how the vector features
+their attribute data. The GeoArrow specification defines how the vector features
 (geometries) can be stored in Arrow (and Arrow-compatible) data structures.
 
 This repository contains the specifications for:
@@ -29,7 +29,7 @@ Defining a standard and efficient way to store geospatial data in the Arrow memo
 layout helps interoperability between different tools and ensures geospatial tools can
 leverage the growing Apache Arrow ecosystem:
 
-- Efficient, columnar data formats. Leveraging the performant and compact storage of
+- Efficient, columnar file formats. Leveraging the performant and compact storage of
   Apache Parquet as a vector data format in geospatial tools using
   [GeoParquet](https://github.com/opengeospatial/geoparquet/).
 - Accelerated between-process geospatial data exchange using Apache Arrow IPC message
