@@ -47,24 +47,19 @@ The following keys in the JSON metadata object are supported:
 
     - A JSON object describing the coordinate reference system (CRS)
       using [PROJJSON](https://proj.org/specifications/projjson.html).
-      This key can also be omitted if the producer does not have any
-      information about the CRS. Note that regardless of the axis
-      order specified by the CRS, axis order will be interpreted
-      according to the wording in the
-      [GeoPackage WKB binary encoding](https://www.geopackage.org/spec130/index.html#gpb_format):
-      axis order is always (longitude, latitude) and (easting, northing)
-      regardless of the the axis order encoded in the CRS specification.
-    - A JSON string containing an undefined CRS representation. This option
+    - A string containing an undefined CRS representation. This option
       is intended as a fallback for producers (e.g., database drivers or
       file readers) that are provided a CRS in some form but do not have the
       means by which to convert it to PROJJSON.
-    - A JSON `null`, indicating that the CRS is not specified.
-    - Omitted, indicating an implicit CRS of
-      [OGC:CRS84](https://www.opengis.net/def/crs/OGC/1.3/CRS84) (i.e.,
-      [EPSG:4326](https://epsg.org/crs_4326/WGS-84.html)
-      with explicit axis order longitude, latitude).
+    - Omitted, indicating that the producer does not have any information about
+      the CRS.
 
   For maximum compatibility, producers should write PROJJSON where possible.
+  Note that regardless of the axis order specified by the CRS, axis order will be interpreted
+  according to the wording in the
+  [GeoPackage WKB binary encoding](https://www.geopackage.org/spec130/index.html#gpb_format):
+  axis order is always (longitude, latitude) and (easting, northing)
+  regardless of the the axis order encoded in the CRS specification.
 
 - `edges`: A value of `"spherical"` instructs consumers that edges follow
   a spherical path rather than a planar one. If this value is omitted,
