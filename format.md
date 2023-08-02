@@ -126,6 +126,28 @@ is a list of xy vertices. The child name of the outer list should be "polygons";
 the child name of the middle list should be "rings"; the child name of the
 inner list should be "vertices".
 
+**Mixed**: `DenseUnion`
+
+So far, all geometry array types listed above have required that all geometries in the array be of the same type. An array of mixed geometry type is represented as a dense union containing one or more of the above geometry array types.
+
+In order to determine the meaning of each underlying array in the union, each child array in the union is required to have a [GeoArrow extension type](./extension-types.md) set.
+
+The mixed array allows for elements in the array to be of different geometry types. Note that the mixed array does not support the equivalent of a GeometryCollection, because it only allows for _one_ geometry per row.
+
+- The union array may not contain more than one child array of a given geometry type.
+- The union array may not contain a GeometryCollection array (this restriction may be relaxed in the future to allow nested GeometryCollections).
+
+Note that single and multi geometries of the same type can be stored together in a Multi
+encoding. For example, a mix of Polygon and MultiPolygon can be stored as MultiPolygons,
+with a Polygon being represented as a length-1 MultiPolygon. This is recommended over a mixed
+geometry array if possible because it has less overhead per geometry.
+
+**GeometryCollection**: `List<Mixed>`
+
+An array of GeometryCollections is represented as a list of mixed geometries. Each element of the array thus represents one or more geometries of mixed type.
+
+Nested GeometryCollections are not yet supported, but can be in the future if we relax the restriction that a mixed array cannot recursively contain a GeometryCollection array.
+
 ### Missing values (nulls)
 
 Arrow supports missing values through a validity bitmap, and for nested data
@@ -144,28 +166,6 @@ Except for Points, empty geometries can be faithfully represented as an
 empty inner list.
 
 Empty points can be represented as `POINT (NaN NaN)`.
-
-### GeometryCollection
-
-GeometryCollection features cannot yet be represented using a native encoding. Future
-support is planned using an
-[Arrow union type](https://arrow.apache.org/docs/format/Columnar.html#union-layout).
-
-GeometryCollection features can be represented using a serialized encoding (WKB or WKT),
-see below.
-
-### Mixed Geometry types
-
-Arrays containing features of mixed geometry types cannot yet be represented using a
-native encoding. Future support is planned using an
-[Arrow union type](https://arrow.apache.org/docs/format/Columnar.html#union-layout).
-
-Note that single and multi geometries of the same type can be stored together in a Multi
-encoding. For example, a mix of Polygon and MultiPolygon can be stored as MultiPolygons,
-with a Polygon being represented as a length-1 MultiPolygon.
-
-Arrays with mixed geometry types can be represented using a serialized encoding (WKB or
-WKT), see below.
 
 ### Field and child names
 
