@@ -50,7 +50,10 @@ The following keys in the JSON metadata object are supported:
     - A string containing an undefined CRS representation. This option
       is intended as a fallback for producers (e.g., database drivers or
       file readers) that are provided a CRS in some form but do not have the
-      means by which to convert it to PROJJSON.
+      means by which to convert it to PROJJSON. This specification makes no
+      guarantees about what this string may contain or how its contents should
+      be interpreted. As such, it is intended only as a last resort for producers
+      with no other option.
     - Omitted, indicating that the producer does not have any information about
       the CRS.
 
