@@ -30,10 +30,11 @@ field set, it should be set to one of `geoarrow.point`, `geoarrow.linestring`,
 `geoarrow.polygon`, `geoarrow.multipoint`, `geoarrow.multilinestring`,
 `geoarrow.multipolygon`, `geoarrow.wkb`, or `geoarrow.wkt`. These names correspond
 to the memory layouts and value constraints described in
-[GeoArrow memory layout specification](format.md). The `ARROW:extension:name`
-and `ARROW:extension:metadata` metadata fields must only be set for the Array
-at the top level (i.e., child arrays must not carry an extension name or
-metadata).
+[GeoArrow memory layout specification](format.md); however, it should be noted
+that for each extension name there may be more than one concrete memory layout.
+The `ARROW:extension:name` and `ARROW:extension:metadata` metadata fields must
+only be set for the Array at the top level (i.e., child arrays must not carry
+an extension name or metadata).
 
 ## Extension metadata
 
