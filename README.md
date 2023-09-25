@@ -53,6 +53,6 @@ the Arrow-specific specifications (Arrow layout and extension type metadata).
 
 * [geoarrow-c](https://github.com/geoarrow/geoarrow-c): geospatial type system and
   generic coordinate-shuffling library written in C with bindings in C++, R, and Python
-* [geoarrow-rs](https://github.com/kylebarron/geoarrow-rs/): Rust implementation of the
+* [geoarrow-rs](https://github.com/geoarrow/geoarrow-rs/): Rust implementation of the
   GeoArrow specification and bindings to GeoRust algorithms for efficient spatial
   operations on GeoArrow memory. Includes JavaScript (WebAssembly) bindings.
