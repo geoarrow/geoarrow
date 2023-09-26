@@ -101,6 +101,8 @@ outer nesting: each element of the array (Polygon) is a list of rings (the
 first ring is the exterior ring, optional subsequent rings are interior
 rings), and each ring is a list of xy vertices. The child name of the outer
 list should be "rings"; the child name of the inner list should be "vertices".
+The first coordinate and the last coordinate of a ring must be identical
+(i.e., rings must be closed).
 
 **MultiPoint**: `List<Coordinate>`
 
