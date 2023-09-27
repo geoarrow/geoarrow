@@ -143,7 +143,7 @@ ring or a point with a null x value).
 ### Empty geometries
 
 Except for Points, empty geometries can be faithfully represented as an
-empty inner list.
+empty outer list.
 
 Empty points can be represented as `POINT (NaN NaN)`.
 
