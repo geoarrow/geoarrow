@@ -42,7 +42,7 @@ leverage the growing Apache Arrow ecosystem:
 - Shared libraries for geospatial data type representation and computation for query
   engines that support columnar data formats (e.g., Velox, DuckDB, and Acero)
 
-### Relationship with GeoParquet
+## Relationship with GeoParquet
 
 The GeoParquet specification originally started in this repo, but was moved out into its
 own repo (https://github.com/opengeospatial/geoparquet), leaving this repo to focus on
