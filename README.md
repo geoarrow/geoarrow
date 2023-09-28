@@ -1,7 +1,7 @@
 
 # GeoArrow Specification
 
-This repository contains specifications for storing geospatial data in Apache Arrow
+This repository contains a specification for storing geospatial data in Apache Arrow
 and Arrow-compatible data structures and formats.
 
 The [Apache Arrow](https://arrow.apache.org/) project specifies a standardized
