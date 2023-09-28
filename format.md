@@ -30,16 +30,17 @@ considerable (de)serialization cost, neither do they have a compute-friendly
 memory layout.
 
 The goal of this specification is to store geometries in an Arrow-compatible
-format that 
+format that:
 
-1. has low (de)serialization overhead
-2. once in memory is cheap to convert to geospatial libraries (e.g., GEOS or JTS) or easy to directly operate on (e.g., directly working with the coordinate values).
+- Has low (de)serialization overhead, and
+- Once in memory is cheap to convert to geospatial libraries (e.g., GEOS or JTS)
+  or easy to directly operate on (e.g., directly working with the coordinate values).
 
 Benefits of using the proposed Arrow-native format include:
 
-- Cheap access to the raw coordinate values for all geometries
-- Columnar data layout
-- Full data type system of Arrow is available for attribute data
+- Cheap access to the raw coordinate values for all geometries,
+- Columnar data layout, and
+- Full data type system of Arrow is available for attribute data.
 
 More specifically, the Arrow geometry specification stores the raw coordinate
 values in contiguous buffers with enough metadata (offsets) to reconstruct or
