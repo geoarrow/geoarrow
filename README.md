@@ -59,6 +59,6 @@ using the Arrow IPC format).
 * [geoarrow-rs](https://github.com/geoarrow/geoarrow-rs/): Rust implementation of the
   GeoArrow specification and bindings to GeoRust algorithms for efficient spatial
   operations on GeoArrow memory. Includes JavaScript (WebAssembly) bindings.
-* [geoarrow-python](https://github.com/geoarrow/geoarrow-python): Bindings to geoarrow-c
+* [geoarrow-python](https://github.com/geoarrow/geoarrow-python): Python bindings to geoarrow-c
   and geoarrow-rs that provide integrations with libraries like pyarrow, pandas, and
   geopandas.
