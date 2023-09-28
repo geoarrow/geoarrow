@@ -62,3 +62,5 @@ using the Arrow IPC format).
 * [geoarrow-python](https://github.com/geoarrow/geoarrow-python): Python bindings to geoarrow-c
   and geoarrow-rs that provide integrations with libraries like pyarrow, pandas, and
   geopandas.
+* [geoarrow-wasm](https://github.com/geoarrow/geoarrow-rs/blob/main/js/README.md):
+  WebAssembly module based on geoarrow-rs
