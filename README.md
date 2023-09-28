@@ -48,7 +48,7 @@ The GeoParquet specification originally started in this repo, but was moved out 
 own repo (https://github.com/opengeospatial/geoparquet), leaving this repo to focus on
 the Arrow-specific specifications (Arrow layout and extension type metadata). Whereas
 GeoParquet is a file-level metadata specification, GeoArrow is a field-level metadata
-and memory layout that applies in-memory (e.g., an Arrow array), on disk (e.g., using
+and memory layout specification that applies to in-memory (e.g., an Arrow array), on disk (e.g., using
 Parquet readers/writers provided by an Arrow implementation), and over the wire (e.g.,
 using the Arrow IPC format).
 
