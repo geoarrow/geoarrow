@@ -1,6 +1,8 @@
-# GeoArrow - geospatial data with Apache Arrow
 
-Specifications for storing geospatial data in Apache Arrow.
+# GeoArrow Specification
+
+This repository contains specifications for storing geospatial data in Apache Arrow
+and Arrow-compatible data structures and formats.
 
 The [Apache Arrow](https://arrow.apache.org/) project specifies a standardized
 language-independent columnar memory format. It enables shared computational libraries,
