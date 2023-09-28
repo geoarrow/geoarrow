@@ -1,7 +1,8 @@
-# GeoArrow: an Arrow-native storage format for vector geometries
+
+# GeoArrow Memory Layout Specification
 
 Spatial information can be represented as a collection of discrete objects
-using points, lines and polygons, i.e. vector data. The
+using points, lines, and polygons (i.e., vector data). The
 [Simple Feature Access](https://www.ogc.org/standards/sfa) standard provides
 a widely used abstraction, defining a set of geometries: Point, LineString,
 Polygon, MultiPoint, MultiLineString, MultiPolygon, GeometryCollection. Next
@@ -13,7 +14,7 @@ standardized language-independent columnar memory format. It enables shared
 computational libraries, zero-copy shared memory and streaming messaging,
 interprocess communication, etc and is supported by many programming
 languages. The Arrow columnar memory model is suited to store both vector
-features and its attribute data. This document specifies how such vector
+features and their attribute data. This document specifies how such vector
 features can be stored in Arrow (and Arrow-compatible) data structures.
 
 The terminology for array types in this document is based on the
@@ -23,33 +24,35 @@ The terminology for array types in this document is based on the
 
 ### Motivation
 
-Standard ways to represent or serialize vector geometries include WKT (e.g.
+Standard ways to represent or serialize vector geometries include WKT (e.g.,
 "POINT (0 0)"), WKB and GeoJSON. Each of those representations have a
 considerable (de)serialization cost, neither do they have a compute-friendly
 memory layout.
 
 The goal of this specification is to store geometries in an Arrow-compatible
-format that has 1) low (de)serialization overhead and 2) once in memory is
-cheap to convert to geospatial libraries (e.g. GEOS or JTS) or easy to
-directly operate on (e.g. directly working with the coordinate values).
+format that:
 
-Benefits of using the proposed Arrow-native format:
+- Has low (de)serialization overhead, and
+- Once in memory is cheap to convert to geospatial libraries (e.g., GEOS or JTS)
+  or easy to directly operate on (e.g., directly working with the coordinate values).
 
-- Cheap access to the raw coordinate values for all geometries.
-- Columnar data layout.
+Benefits of using the proposed Arrow-native format include:
+
+- Cheap access to the raw coordinate values for all geometries,
+- Columnar data layout, and
 - Full data type system of Arrow is available for attribute data.
 
-More specifically, the Arrow geometry specification stores the raw coordinates
-values in contiguous arrays with enough metadata (offsets) to reconstruct or
-interpret as actual geometries.
+More specifically, the Arrow geometry specification stores the raw coordinate
+values in contiguous buffers with enough metadata (offsets) to reconstruct or
+interpret them as actual geometries.
 
 [FlatGeoBuf](https://flatgeobuf.org/) is similar on various aspects, but is
-record-oriented, while Arrow is column-oriented.
+record-oriented, whereas Arrow is column-oriented.
 
 ### Memory layouts
 
 GeoArrow proposes a packed columnar data format for the fundamental geometry
-types, using packed coordinate and offset arrays to define geometry objects.
+types using packed coordinate and offset arrays to define geometry objects.
 
 The inner level is always an array of coordinates. For any geometry type except
 Point, this inner level is nested in one or multiple

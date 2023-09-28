@@ -1,5 +1,5 @@
 
-# Arrow Extension Type definitions
+# GeoArrow Extension Type Definitions
 
 The memory layout specification provides an encoding for geometry types
 using the Arrow Columnar format; however, it does not provide a route by
