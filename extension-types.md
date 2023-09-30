@@ -39,18 +39,32 @@ an extension name or metadata).
 ## Extension metadata
 
 When GeoArrow-encoded Arrays have the `ARROW:extension:metadata` metadata
-field set, it must be seriaized as a UTF-8 encoded JSON object. The following
-keys in the JSON metadata object are supported:
+field set, it must be seriaized as a UTF-8 encoded JSON object. The extension
+metadata specification is intentionally aligned with the
+[GeoParquet column metadata specifification](https://github.com/opengeospatial/geoparquet/blob/main/format-specs/geoparquet.md#metadata).
+The following keys in the JSON metadata object are supported:
 
-- `crs`: A JSON object describing the coordinate reference system (CRS)
-  using [PROJJSON](https://proj.org/specifications/projjson.html).
-  This key can also be omitted if the producer does not have any
-  information about the CRS. Note that regardless of the axis
-  order specified by the CRS, axis order will be interpreted
+- `crs`: One of:
+
+    - A JSON object describing the coordinate reference system (CRS)
+      using [PROJJSON](https://proj.org/specifications/projjson.html).
+    - A string containing an undefined CRS representation. This option
+      is intended as a fallback for producers (e.g., database drivers or
+      file readers) that are provided a CRS in some form but do not have the
+      means by which to convert it to PROJJSON. This specification makes no
+      guarantees about what this string may contain or how its contents should
+      be interpreted. As such, it is intended only as a last resort for producers
+      with no other option.
+    - Omitted, indicating that the producer does not have any information about
+      the CRS.
+
+  For maximum compatibility, producers should write PROJJSON where possible.
+  Note that regardless of the axis order specified by the CRS, axis order will be interpreted
   according to the wording in the
   [GeoPackage WKB binary encoding](https://www.geopackage.org/spec130/index.html#gpb_format):
   axis order is always (longitude, latitude) and (easting, northing)
   regardless of the the axis order encoded in the CRS specification.
+
 - `edges`: A value of `"spherical"` instructs consumers that edges follow
   a spherical path rather than a planar one. If this value is omitted,
   edges will be interpreted as planar. This metadata key is only applicable
