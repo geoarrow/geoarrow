@@ -1,5 +1,5 @@
 
-# Arrow Extension Type definitions
+# GeoArrow Extension Type Definitions
 
 The memory layout specification provides an encoding for geometry types
 using the Arrow Columnar format; however, it does not provide a route by
@@ -39,12 +39,14 @@ field set, it should be set to one of:
 - `geoarrow.wkb`
 - `geoarrow.wkt`
 
-These names correspond
-to the memory layouts and value constraints described in
-[GeoArrow memory layout specification](format.md). Except for geometry and geometry collection arrays, the `ARROW:extension:name`
-and `ARROW:extension:metadata` metadata fields must only be set for the Array
-at the top level (i.e., child arrays must not carry an extension name or
-metadata). For the geometry and geometry collection arrays, child arrays must include extension metadata.
+These names correspond to the memory layouts and value constraints described in
+[GeoArrow memory layout specification](format.md); however, it should be noted
+that for each extension name there may be more than one concrete memory layout.
+Except for geometry and geometry collection arrays, the `ARROW:extension:name`
+and `ARROW:extension:metadata` metadata fields must only be set for the Array at
+the top level (i.e., child arrays must not carry an extension name or metadata).
+For the geometry and geometry collection arrays, child arrays must include
+extension metadata.
 
 ## Extension metadata
 
