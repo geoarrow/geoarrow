@@ -34,17 +34,17 @@ field set, it should be set to one of:
 - `geoarrow.multipoint`
 - `geoarrow.multilinestring`
 - `geoarrow.multipolygon`
-- `geoarrow.mixed`
+- `geoarrow.geometry`
 - `geoarrow.geometrycollection`
 - `geoarrow.wkb`
 - `geoarrow.wkt`
 
 These names correspond
 to the memory layouts and value constraints described in
-[GeoArrow memory layout specification](format.md). Except for mixed and geometry collection arrays, the `ARROW:extension:name`
+[GeoArrow memory layout specification](format.md). Except for geometry and geometry collection arrays, the `ARROW:extension:name`
 and `ARROW:extension:metadata` metadata fields must only be set for the Array
 at the top level (i.e., child arrays must not carry an extension name or
-metadata). For the mixed and geometry collection arrays, child arrays must include extension metadata.
+metadata). For the geometry and geometry collection arrays, child arrays must include extension metadata.
 
 ## Extension metadata
 

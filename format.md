@@ -126,27 +126,35 @@ is a list of xy vertices. The child name of the outer list should be "polygons";
 the child name of the middle list should be "rings"; the child name of the
 inner list should be "vertices".
 
-**Mixed**: `DenseUnion`
+**Geometry**: `DenseUnion`
 
-So far, all geometry array types listed above have required that all geometries in the array be of the same type. An array of mixed geometry type is represented as a dense union containing one or more of the above geometry array types.
+So far, all geometry array types listed above have required that all geometries in the array be of the same type. An array of mixed geometry type is represented as a dense union whose children include one or more of the above geometry array types. Its children may also optionally include a geometry collection array, described below.
 
 In order to determine the meaning of each underlying array in the union, each child array in the union is required to have a [GeoArrow extension type](./extension-types.md) set.
 
-The mixed array allows for elements in the array to be of different geometry types. Note that the mixed array does not support the equivalent of a GeometryCollection, because it only allows for _one_ geometry per row.
+The geometry array allows for elements in the array to be of different geometry types.
 
 - The union array may not contain more than one child array of a given geometry type.
-- The union array may not contain a GeometryCollection array (this restriction may be relaxed in the future to allow nested GeometryCollections).
+- The "type ids" part of the union field metadata must be defined such that the order of the child arrays match the following order:
+  1. Point
+  2. LineString
+  3. Polygon
+  4. MultiPoint
+  5. MultiLineString
+  6. MultiPolygon
+  7. GeometryCollection
 
-Note that single and multi geometries of the same type can be stored together in a Multi
-encoding. For example, a mix of Polygon and MultiPolygon can be stored as MultiPolygons,
-with a Polygon being represented as a length-1 MultiPolygon. This is recommended over a mixed
-geometry array if possible because it has less overhead per geometry.
+    This ordering was chosen to match the WKB specification.
 
-**GeometryCollection**: `List<Mixed>`
+Note that single and multi geometries of the same type can be stored together in
+a Multi encoding without using this geometry type. For example, a mix of Polygon
+and MultiPolygon can be stored as MultiPolygons, with a Polygon being
+represented as a length-1 MultiPolygon. This is recommended over a geometry
+array if possible because it has less overhead per geometry.
 
-An array of GeometryCollections is represented as a list of mixed geometries. Each element of the array thus represents one or more geometries of mixed type.
+**GeometryCollection**: `List<Geometry>`
 
-Nested GeometryCollections are not yet supported, but can be in the future if we relax the restriction that a mixed array cannot recursively contain a GeometryCollection array.
+An array of GeometryCollections is represented as a list containing the above geometry array. Each element of the array thus represents one or more geometries of varied type.
 
 ### Missing values (nulls)
 
