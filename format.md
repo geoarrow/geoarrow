@@ -141,13 +141,37 @@ The geometry array allows for elements in the array to be of different geometry 
 
 - The union array may not contain more than one child array of a given geometry type.
 - The "type ids" part of the union field metadata must be defined such that the order of the child arrays match the following order:
-  1. Point
-  2. LineString
-  3. Polygon
-  4. MultiPoint
-  5. MultiLineString
-  6. MultiPolygon
-  7. GeometryCollection
+
+    ```
+    1: Point
+    2: LineString
+    3: Polygon
+    4: MultiPoint
+    5: MultiLineString
+    6: MultiPolygon
+    7: GeometryCollection
+    11: Point Z
+    12: LineString Z
+    13: Polygon Z
+    14: MultiPoint Z
+    15: MultiLineString Z
+    16: MultiPolygon Z
+    17: GeometryCollection Z
+    21: Point M
+    22: LineString M
+    23: Polygon M
+    24: MultiPoint M
+    25: MultiLineString M
+    26: MultiPolygon M
+    27: GeometryCollection M
+    31: Point ZM
+    32: LineString ZM
+    33: Polygon ZM
+    34: MultiPoint ZM
+    35: MultiLineString ZM
+    36: MultiPolygon ZM
+    37: GeometryCollection ZM
+    ```
 
     This ordering was chosen to match the WKB specification.
 

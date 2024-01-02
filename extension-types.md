@@ -41,12 +41,10 @@ field set, it should be set to one of:
 
 These names correspond to the memory layouts and value constraints described in
 [GeoArrow memory layout specification](format.md); however, it should be noted
-that for each extension name is more than one concrete memory layout.
-Except for geometry and geometry collection arrays, the `ARROW:extension:name`
+that multiple concrete memory layouts exist for each extension name.
+The `ARROW:extension:name`
 and `ARROW:extension:metadata` metadata fields must only be set for the Array at
 the top level (i.e., child arrays must not carry an extension name or metadata).
-For the geometry and geometry collection arrays, child arrays must include
-extension metadata.
 
 ## Extension metadata
 
