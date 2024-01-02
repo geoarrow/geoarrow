@@ -135,8 +135,6 @@ inner list should be "vertices".
 
 So far, all geometry array types listed above have required that all geometries in the array be of the same type. An array of mixed geometry type is represented as a dense union whose children include one or more of the above geometry array types. Its children may also optionally include a geometry collection array, described below.
 
-In order to determine the meaning of each underlying array in the union, each child array in the union is required to have a [GeoArrow extension type](./extension-types.md) set.
-
 The geometry array allows for elements in the array to be of different geometry types.
 
 - The union array may not contain more than one child array of a given geometry type.
