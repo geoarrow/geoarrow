@@ -171,7 +171,7 @@ The geometry array allows for elements in the array to be of different geometry 
     37: GeometryCollection ZM
     ```
 
-    This ordering was chosen to match the WKB specification.
+    These values were chosen to match the WKB specification exactly for 2D geometries and match the WKB specification conceptually for Z, M, and ZM geometries given the constraint that an Arrow union type ID must be between 0 and 127.
 
 Note that single and multi geometries of the same type can be stored together in
 a Multi encoding without using this geometry type. For example, a mix of Polygon
