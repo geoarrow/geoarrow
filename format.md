@@ -131,6 +131,58 @@ is a list of xy vertices. The child name of the outer list should be "polygons";
 the child name of the middle list should be "rings"; the child name of the
 inner list should be "vertices".
 
+**Geometry**: `DenseUnion`
+
+So far, all geometry array types listed above have required that all geometries in the array be of the same type. An array of mixed geometry type is represented as a dense union whose children include one or more of the above geometry array types. Its children may also optionally include a geometry collection array, described below.
+
+The geometry array allows for elements in the array to be of different geometry types.
+
+- The union array may not contain more than one child array of a given geometry type.
+- The "type ids" part of the union field metadata must be defined such that the order of the child arrays match the following order:
+
+    ```
+    1: Point
+    2: LineString
+    3: Polygon
+    4: MultiPoint
+    5: MultiLineString
+    6: MultiPolygon
+    7: GeometryCollection
+    11: Point Z
+    12: LineString Z
+    13: Polygon Z
+    14: MultiPoint Z
+    15: MultiLineString Z
+    16: MultiPolygon Z
+    17: GeometryCollection Z
+    21: Point M
+    22: LineString M
+    23: Polygon M
+    24: MultiPoint M
+    25: MultiLineString M
+    26: MultiPolygon M
+    27: GeometryCollection M
+    31: Point ZM
+    32: LineString ZM
+    33: Polygon ZM
+    34: MultiPoint ZM
+    35: MultiLineString ZM
+    36: MultiPolygon ZM
+    37: GeometryCollection ZM
+    ```
+
+    These values were chosen to match the WKB specification exactly for 2D geometries and match the WKB specification conceptually for Z, M, and ZM geometries given the constraint that an Arrow union type ID must be between 0 and 127.
+
+Note that single and multi geometries of the same type can be stored together in
+a Multi encoding without using this geometry type. For example, a mix of Polygon
+and MultiPolygon can be stored as MultiPolygons, with a Polygon being
+represented as a length-1 MultiPolygon. This is recommended over a geometry
+array if possible because it has less overhead per geometry.
+
+**GeometryCollection**: `List<Geometry>`
+
+An array of GeometryCollections is represented as a list containing the above geometry array. Each element of the array thus represents one or more geometries of varied type.
+
 ### Missing values (nulls)
 
 Arrow supports missing values through a validity bitmap, and for nested data
@@ -149,28 +201,6 @@ Except for Points, empty geometries can be faithfully represented as an
 empty outer list.
 
 Empty points can be represented as `POINT (NaN NaN)`.
-
-### GeometryCollection
-
-GeometryCollection features cannot yet be represented using a native encoding. Future
-support is planned using an
-[Arrow union type](https://arrow.apache.org/docs/format/Columnar.html#union-layout).
-
-GeometryCollection features can be represented using a serialized encoding (WKB or WKT),
-see below.
-
-### Mixed Geometry types
-
-Arrays containing features of mixed geometry types cannot yet be represented using a
-native encoding. Future support is planned using an
-[Arrow union type](https://arrow.apache.org/docs/format/Columnar.html#union-layout).
-
-Note that single and multi geometries of the same type can be stored together in a Multi
-encoding. For example, a mix of Polygon and MultiPolygon can be stored as MultiPolygons,
-with a Polygon being represented as a length-1 MultiPolygon.
-
-Arrays with mixed geometry types can be represented using a serialized encoding (WKB or
-WKT), see below.
 
 ### Field and child names
 
