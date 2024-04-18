@@ -39,7 +39,7 @@ an extension name or metadata).
 ## Extension metadata
 
 When GeoArrow-encoded Arrays have the `ARROW:extension:metadata` metadata
-field set, it must be seriaized as a UTF-8 encoded JSON object. The following
+field set, it must be serialized as a UTF-8 encoded JSON object. The following
 keys in the JSON metadata object are supported:
 
 - `crs`: A JSON object describing the coordinate reference system (CRS)
