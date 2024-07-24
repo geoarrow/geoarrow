@@ -134,7 +134,8 @@ inner list should be "vertices".
 
 An array of axis-aligned rectangles is represented as a Struct array containing
 four, six, or eight child double arrays with names corresponding to the
-dimension represented by the child.
+dimension represented by the child. This was chosen to align with the covering column
+definition in the GeoParquet specification.
 
 The child fields MUST be named and ordered as follows for the given dimension:
 
