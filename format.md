@@ -1,4 +1,3 @@
-
 # GeoArrow Memory Layout Specification
 
 Spatial information can be represented as a collection of discrete objects
@@ -133,45 +132,49 @@ inner list should be "vertices".
 
 **Geometry**: `DenseUnion`
 
-So far, all geometry array types listed above have required that all geometries in the array be of the same type. An array of mixed geometry type is represented as a dense union whose children include one or more of the above geometry array types. Its children may also optionally include a geometry collection array, described below.
+So far, all geometry array types listed above have required that all geometries
+in the array be of the same type. An array of mixed geometry type is represented
+as a [dense
+union](https://arrow.apache.org/docs/format/Columnar.html#dense-union) whose
+children include one or more of the above geometry array types.
 
 The geometry array allows for elements in the array to be of different geometry types.
 
 - The union array may not contain more than one child array of a given geometry type.
-- The "type ids" part of the union field metadata must be defined such that the order of the child arrays match the following order:
+- The "type ids" and field name of the union field metadata must be defined as such:
 
-    ```
-    1: Point
-    2: LineString
-    3: Polygon
-    4: MultiPoint
-    5: MultiLineString
-    6: MultiPolygon
-    7: GeometryCollection
-    11: Point Z
-    12: LineString Z
-    13: Polygon Z
-    14: MultiPoint Z
-    15: MultiLineString Z
-    16: MultiPolygon Z
-    17: GeometryCollection Z
-    21: Point M
-    22: LineString M
-    23: Polygon M
-    24: MultiPoint M
-    25: MultiLineString M
-    26: MultiPolygon M
-    27: GeometryCollection M
-    31: Point ZM
-    32: LineString ZM
-    33: Polygon ZM
-    34: MultiPoint ZM
-    35: MultiLineString ZM
-    36: MultiPolygon ZM
-    37: GeometryCollection ZM
-    ```
+    | Type ID | Geometry type      | Field name             |
+    | ------- | ------------------ | ---------------------- |
+    | 1       | Point              | `"Point"`              |
+    | 2       | LineString         | `"LineString"`         |
+    | 3       | Polygon            | `"Polygon"`            |
+    | 4       | MultiPoint         | `"MultiPoint"`         |
+    | 5       | MultiLineString    | `"MultiLineString"`    |
+    | 6       | MultiPolygon       | `"MultiPolygon"`       |
+    | 11      | Point Z            | `"Point Z"`            |
+    | 12      | LineString Z       | `"LineString Z"`       |
+    | 13      | Polygon Z          | `"Polygon Z"`          |
+    | 14      | MultiPoint Z       | `"MultiPoint Z"`       |
+    | 15      | MultiLineString Z  | `"MultiLineString Z"`  |
+    | 16      | MultiPolygon Z     | `"MultiPolygon Z"`     |
+    | 21      | Point M            | `"Point M"`            |
+    | 22      | LineString M       | `"LineString M"`       |
+    | 23      | Polygon M          | `"Polygon M"`          |
+    | 24      | MultiPoint M       | `"MultiPoint M"`       |
+    | 25      | MultiLineString M  | `"MultiLineString M"`  |
+    | 26      | MultiPolygon M     | `"MultiPolygon M"`     |
+    | 31      | Point ZM           | `"Point ZM"`           |
+    | 32      | LineString ZM      | `"LineString ZM"`      |
+    | 33      | Polygon ZM         | `"Polygon ZM"`         |
+    | 34      | MultiPoint ZM      | `"MultiPoint ZM"`      |
+    | 35      | MultiLineString ZM | `"MultiLineString ZM"` |
+    | 36      | MultiPolygon ZM    | `"MultiPolygon ZM"`    |
 
-    These values were chosen to match the WKB specification exactly for 2D geometries and match the WKB specification conceptually for Z, M, and ZM geometries given the constraint that an Arrow union type ID must be between 0 and 127.
+    These type id values were chosen to match the WKB specification exactly for 2D geometries and match the WKB specification conceptually for Z, M, and ZM geometries, given the constraint that an Arrow union type ID must be between 0 and 127.
+
+- A geometry array does not need to contain _all_ possible children arrays, but those children arrays must have the type ids defined above.
+- All children arrays of a geometry array must have the same dimensionality. So `Point` and `Polygon` arrays may be combined in a geometry array, but `Point` and `Polygon Z` arrays may not be.
+- The children arrays should not themselves contain GeoArrow metadata. Only the top-level geometry array should contain GeoArrow metadata.
 
 Note that single and multi geometries of the same type can be stored together in
 a Multi encoding without using this geometry type. For example, a mix of Polygon
@@ -181,7 +184,9 @@ array if possible because it has less overhead per geometry.
 
 **GeometryCollection**: `List<Geometry>`
 
-An array of GeometryCollections is represented as a list containing the above geometry array. Each element of the array thus represents one or more geometries of varied type.
+An array of GeometryCollections is represented as a list containing the above
+geometry array. Each element of the array thus represents one or more geometries
+of varied type. The child name of the outer list should be "geometries".
 
 ### Missing values (nulls)
 
