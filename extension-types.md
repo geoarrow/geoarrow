@@ -25,16 +25,16 @@ information.
 
 ## Extension names
 
-When GeoArrow-encoded Arrays have the `ARROW:extension:name` metadata
-field set, it should be set to one of `geoarrow.point`, `geoarrow.linestring`,
+When GeoArrow-encoded Arrays have the `ARROW:extension:name` metadata field set,
+it should be set to one of `geoarrow.point`, `geoarrow.linestring`,
 `geoarrow.polygon`, `geoarrow.multipoint`, `geoarrow.multilinestring`,
-`geoarrow.multipolygon`, `geoarrow.wkb`, or `geoarrow.wkt`. These names correspond
-to the memory layouts and value constraints described in
+`geoarrow.multipolygon`, `geoarrow.box`, `geoarrow.wkb`, or `geoarrow.wkt`.
+These names correspond to the memory layouts and value constraints described in
 [GeoArrow memory layout specification](format.md); however, it should be noted
 that for each extension name there may be more than one concrete memory layout.
 The `ARROW:extension:name` and `ARROW:extension:metadata` metadata fields must
-only be set for the Array at the top level (i.e., child arrays must not carry
-an extension name or metadata).
+only be set for the Array at the top level (i.e., child arrays must not carry an
+extension name or metadata).
 
 ## Extension metadata
 
@@ -51,12 +51,12 @@ keys in the JSON metadata object are supported:
   [GeoPackage WKB binary encoding](https://www.geopackage.org/spec130/index.html#gpb_format):
   axis order is always (longitude, latitude) and (easting, northing)
   regardless of the the axis order encoded in the CRS specification.
-- `edges`: A value of `"spherical"` instructs consumers that edges follow
-  a spherical path rather than a planar one. If this value is omitted,
-  edges will be interpreted as planar. This metadata key is only applicable
-  to a `geoarrow.linestring`, `geoarrow.polygon`, `geoarrow.multilinestring`,
-  `geoarrow.multipolygon` or `geoarrow.wkb` array and should be omitted for
-  an Array with any other extension name.
+- `edges`: A value of `"spherical"` instructs consumers that edges follow a
+  spherical path rather than a planar one. If this value is omitted, edges will
+  be interpreted as planar. This metadata key is only applicable to a
+  `geoarrow.linestring`, `geoarrow.polygon`, `geoarrow.multilinestring`,
+  `geoarrow.multipolygon`, `geoarrow.box`, `geoarrow.wkb`, or `geoarrow.wkt`
+  array and should be omitted for an Array with any other extension name.
 
 If all metadata keys are omitted, the `ARROW:extension:metadata` should
 also be omitted.

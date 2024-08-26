@@ -1,4 +1,3 @@
-
 # GeoArrow Memory Layout Specification
 
 Spatial information can be represented as a collection of discrete objects
@@ -130,6 +129,20 @@ exterior ring, optional subsequent rings are interior rings), and each ring
 is a list of xy vertices. The child name of the outer list should be "polygons";
 the child name of the middle list should be "rings"; the child name of the
 inner list should be "vertices".
+
+**Box**: `Struct<xmin: double, ymin: double, [zmin: double, [mmin: double>]], xmax: double, ymax: double, [zmax: double, [mmax: double>]]`
+
+An array of axis-aligned rectangles is represented as a Struct array containing
+four, six, or eight child double arrays with names corresponding to the
+dimension represented by the child. This was chosen to align with the covering column
+definition in the GeoParquet specification.
+
+The child fields MUST be named and ordered as follows for the given dimension:
+
+- XY: `[xmin, ymin, xmax, ymax]`
+- XYZ: `[xmin, ymin, zmin, xmax, ymax, zmax]`
+- XYM: `[xmin, ymin, mmin, xmax, ymax, mmax]`
+- XYZM: `[xmin, ymin, zmin, mmin, xmax, ymax, zmax, mmax]`
 
 ### Missing values (nulls)
 
