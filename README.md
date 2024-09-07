@@ -64,3 +64,7 @@ using the Arrow IPC format).
   that provide integrations with libraries like pyarrow, pandas, and
   geopandas.
 * [geoarrow-js](https://github.com/geoarrow/geoarrow-js): Pure TypeScript implementation of GeoArrow, on top of the Arrow JavaScript implementation.
+
+## Downstream libraries
+
+- [Lonboard](https://developmentseed.org/lonboard/latest/): fast, interactive geospatial vector data visualization in Jupyter, building on top of GeoArrow.
