@@ -1,4 +1,3 @@
-
 # GeoArrow Specification
 
 This repository contains a specification for storing geospatial data in Apache Arrow
@@ -45,7 +44,7 @@ leverage the growing Apache Arrow ecosystem:
 ## Relationship with GeoParquet
 
 The GeoParquet specification originally started in this repo, but was moved out into its
-own repo (https://github.com/opengeospatial/geoparquet), leaving this repo to focus on
+[own repo](https://github.com/opengeospatial/geoparquet), leaving this repo to focus on
 the Arrow-specific specifications (Arrow layout and extension type metadata). Whereas
 GeoParquet is a file-level metadata specification, GeoArrow is a field-level metadata
 and memory layout specification that applies in-memory (e.g., an Arrow array), on disk (e.g., using
@@ -58,9 +57,10 @@ using the Arrow IPC format).
   generic coordinate-shuffling library written in C with bindings in C++, R, and Python
 * [geoarrow-rs](https://github.com/geoarrow/geoarrow-rs/): Rust implementation of the
   GeoArrow specification and bindings to GeoRust algorithms for efficient spatial
-  operations on GeoArrow memory. Includes JavaScript (WebAssembly) bindings.
+  operations on GeoArrow memory. See also:
+    * [Python bindings](https://geoarrow.org/geoarrow-rs/python/latest/) to geoarrow-rs
+    * [geoarrow-wasm](https://geoarrow.org/geoarrow-rs/js/), JavaScript (WebAssembly) bindings to geoarrow-rs.
 * [geoarrow-python](https://github.com/geoarrow/geoarrow-python): Python bindings to geoarrow-c
-  and geoarrow-rs that provide integrations with libraries like pyarrow, pandas, and
+  that provide integrations with libraries like pyarrow, pandas, and
   geopandas.
-* [geoarrow-wasm](https://github.com/geoarrow/geoarrow-rs/blob/main/js/README.md):
-  WebAssembly module based on geoarrow-rs
+* [geoarrow-js](https://github.com/geoarrow/geoarrow-js): Pure TypeScript implementation of GeoArrow, on top of the Arrow JavaScript implementation.
