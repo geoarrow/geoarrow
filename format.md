@@ -200,8 +200,6 @@ Implementations SHOULD accept `LargeList` int64 offset buffers but MAY produce o
 
 The `List` type will not overflow until there are `2^31 + 1` entries in the coordinates array. For two 8-byte floats, this would require 32GB of memory in a single coordinates array, and is thus unlikely to occur often in practice.
 
-`ListView` and `LargeListView` are not yet well supported throughout the ecosystem, but implementations SHOULD accept these types as well.
-
 ## Serialized encodings
 
 Whereas there are many advantages to storing data in the native encoding,
