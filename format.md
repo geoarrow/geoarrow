@@ -67,7 +67,11 @@ implementations evolve, this specification may grow to support other coordinate
 representations or shrink to support only one if supporting multiple
 representations becomes a barrier to adoption.
 
-**Coordinate (separated)**: `Struct<x: double, y: double, [z: double, [m: double>]]`
+#### Coordinate (separated)
+
+```
+Struct<x: double, y: double, [z: double, [m: double>]]
+```
 
 An array of coordinates can be stored as a Struct array containing two or more
 child double arrays with names corresponding to the dimension represented by
@@ -75,7 +79,11 @@ the child. The first and second child arrays must represent the x and y
 dimension; where z and m dimensions are both included, the z dimension must
 preceed the m dimension.
 
-**Coordinate (interleaved)**: `FixedSizeList<double>[n_dim]`
+#### Coordinate (interleaved)
+
+```
+FixedSizeList<double>[n_dim]
+```
 
 An array of coordinates may also be represented by a single array
 of interleaved coordinates. `n_dim` can be 2, 3, or 4 depending on the
@@ -85,18 +93,30 @@ the `Struct` representation of a coordinate array, this representation may
 provide better performance for some operations and/or provide better
 compatability with the memory layout of existing libraries.
 
-**Point**: `Coordinate`
+#### Point
+
+```
+Coordinate
+```
 
 An array of point geometries is represented as an array of coordinates,
 which may be encoded according to either of the options above.
 
-**LineString**: `List<Coordinate>`
+#### LineString
+
+```
+List<Coordinate>
+```
 
 An array of LineStrings is represented as a nested list array with one
 level of outer nesting: each element of the array (LineString) is a
 list of xy vertices. The child name of the outer list should be "vertices".
 
-**Polygon**: `List<List<Coordinate>>`
+#### Polygon
+
+```
+List<List<Coordinate>>
+```
 
 An array of Polygons is represented as a nested list array with two levels of
 outer nesting: each element of the array (Polygon) is a list of rings (the
@@ -106,13 +126,21 @@ list should be "rings"; the child name of the inner list should be "vertices".
 The first coordinate and the last coordinate of a ring must be identical
 (i.e., rings must be closed).
 
-**MultiPoint**: `List<Coordinate>`
+#### MultiPoint
+
+```
+List<Coordinate>
+```
 
 An array of MultiPoints is represented as a nested list array, where each outer
 list is a single MultiPoint (i.e. a list of xy coordinates). The child name of
 the outer `List` should be "points".
 
-**MultiLineString**: `List<List<Coordinate>>`
+#### MultiLineString
+
+```
+List<List<Coordinate>>
+```
 
 An array of MultiLineStrings is represented as a nested list array with two
 levels of outer nesting: each element of the array (MultiLineString) is a
@@ -120,7 +148,11 @@ list of LineStrings, which consist itself of a list xy vertices (see above).
 The child name of the outer list should be "linestrings"; the child name of
 the inner list should be "vertices".
 
-**MultiPolygon**: `List<List<List<Coordinate>>>`
+#### MultiPolygon
+
+```
+List<List<List<Coordinate>>>
+```
 
 An array of MultiPolygons is represented as a nested list array with three
 levels of outer nesting: each element of the array (MultiPolygon) is a list
@@ -130,7 +162,12 @@ is a list of xy vertices. The child name of the outer list should be "polygons";
 the child name of the middle list should be "rings"; the child name of the
 inner list should be "vertices".
 
-**Box**: `Struct<xmin: double, ymin: double, [zmin: double, [mmin: double>]], xmax: double, ymax: double, [zmax: double, [mmax: double>]]`
+#### Box
+
+```
+Struct<xmin: double, ymin: double, [zmin: double, [mmin: double>]], xmax: double, ymax: double, [zmax: double, [mmax: double>]]
+
+```
 
 An array of axis-aligned rectangles is represented as a Struct array containing
 four, six, or eight child double arrays with names corresponding to the
