@@ -91,7 +91,7 @@ dimensionality of the geometries, and the field name of the list should
 be "xy", "xyz" or "xyzm", reflecting the dimensionality. Compared to
 the `Struct` representation of a coordinate array, this representation may
 provide better performance for some operations and/or provide better
-compatability with the memory layout of existing libraries.
+compatibility with the memory layout of existing libraries.
 
 #### Point
 
