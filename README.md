@@ -63,6 +63,8 @@ using the Arrow IPC format).
 * [geoarrow-python](https://github.com/geoarrow/geoarrow-python): Python bindings to geoarrow-c
   that provide integrations with libraries like pyarrow, pandas, and
   geopandas.
+* [geoarrow-r](https://github.com/geoarrow/geoarrow-r): R bindings to geoarrow-c that provide 
+  integrations with libraries like sf and Arrow for geospatial data handling.
 * [geoarrow-js](https://github.com/geoarrow/geoarrow-js): Pure TypeScript implementation of GeoArrow, on top of the Arrow JavaScript implementation.
 
 ## Downstream libraries
