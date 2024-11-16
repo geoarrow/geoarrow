@@ -67,7 +67,11 @@ implementations evolve, this specification may grow to support other coordinate
 representations or shrink to support only one if supporting multiple
 representations becomes a barrier to adoption.
 
-**Coordinate (separated)**: `Struct<x: double, y: double, [z: double, [m: double>]]`
+#### Coordinate (separated)
+
+```
+Struct<x: double, y: double, [z: double, [m: double>]]
+```
 
 An array of coordinates can be stored as a Struct array containing two or more
 child double arrays with names corresponding to the dimension represented by
@@ -75,7 +79,11 @@ the child. The first and second child arrays must represent the x and y
 dimension; where z and m dimensions are both included, the z dimension must
 preceed the m dimension.
 
-**Coordinate (interleaved)**: `FixedSizeList<double>[n_dim]`
+#### Coordinate (interleaved)
+
+```
+FixedSizeList<double>[n_dim]
+```
 
 An array of coordinates may also be represented by a single array
 of interleaved coordinates. `n_dim` can be 2, 3, or 4 depending on the
@@ -83,20 +91,32 @@ dimensionality of the geometries, and the field name of the list should
 be "xy", "xyz" or "xyzm", reflecting the dimensionality. Compared to
 the `Struct` representation of a coordinate array, this representation may
 provide better performance for some operations and/or provide better
-compatability with the memory layout of existing libraries.
+compatibility with the memory layout of existing libraries.
 
-**Point**: `Coordinate`
+#### Point
+
+```
+Coordinate
+```
 
 An array of point geometries is represented as an array of coordinates,
 which may be encoded according to either of the options above.
 
-**LineString**: `List<Coordinate>`
+#### LineString
+
+```
+List<Coordinate>
+```
 
 An array of LineStrings is represented as a nested list array with one
 level of outer nesting: each element of the array (LineString) is a
 list of xy vertices. The child name of the outer list should be "vertices".
 
-**Polygon**: `List<List<Coordinate>>`
+#### Polygon
+
+```
+List<List<Coordinate>>
+```
 
 An array of Polygons is represented as a nested list array with two levels of
 outer nesting: each element of the array (Polygon) is a list of rings (the
@@ -106,13 +126,21 @@ list should be "rings"; the child name of the inner list should be "vertices".
 The first coordinate and the last coordinate of a ring must be identical
 (i.e., rings must be closed).
 
-**MultiPoint**: `List<Coordinate>`
+#### MultiPoint
+
+```
+List<Coordinate>
+```
 
 An array of MultiPoints is represented as a nested list array, where each outer
 list is a single MultiPoint (i.e. a list of xy coordinates). The child name of
 the outer `List` should be "points".
 
-**MultiLineString**: `List<List<Coordinate>>`
+#### MultiLineString
+
+```
+List<List<Coordinate>>
+```
 
 An array of MultiLineStrings is represented as a nested list array with two
 levels of outer nesting: each element of the array (MultiLineString) is a
@@ -120,7 +148,11 @@ list of LineStrings, which consist itself of a list xy vertices (see above).
 The child name of the outer list should be "linestrings"; the child name of
 the inner list should be "vertices".
 
-**MultiPolygon**: `List<List<List<Coordinate>>>`
+#### MultiPolygon
+
+```
+List<List<List<Coordinate>>>
+```
 
 An array of MultiPolygons is represented as a nested list array with three
 levels of outer nesting: each element of the array (MultiPolygon) is a list
@@ -130,7 +162,10 @@ is a list of xy vertices. The child name of the outer list should be "polygons";
 the child name of the middle list should be "rings"; the child name of the
 inner list should be "vertices".
 
-**Geometry**: `DenseUnion`
+#### Geometry
+```
+DenseUnion
+```
 
 So far, all geometry array types listed above have required that all geometries
 in the array be of the same type. An array of mixed geometry type is represented
@@ -182,13 +217,22 @@ and MultiPolygon can be stored as MultiPolygons, with a Polygon being
 represented as a length-1 MultiPolygon. This is recommended over a geometry
 array if possible because it has less overhead per geometry.
 
-**GeometryCollection**: `List<Geometry>`
+#### GeometryCollection
+
+```
+List<Geometry>
+```
 
 An array of GeometryCollections is represented as a list containing the above
 geometry array. Each element of the array thus represents one or more geometries
 of varied type. The child name of the outer list should be "geometries".
 
-**Box**: `Struct<xmin: double, ymin: double, [zmin: double, [mmin: double>]], xmax: double, ymax: double, [zmax: double, [mmax: double>]]`
+#### Box
+
+```
+Struct<xmin: double, ymin: double, [zmin: double, [mmin: double>]], xmax: double, ymax: double, [zmax: double, [mmax: double>]]
+
+```
 
 An array of axis-aligned rectangles is represented as a Struct array containing
 four, six, or eight child double arrays with names corresponding to the
@@ -227,6 +271,14 @@ All geometry types should have field and child names as suggested for each;
 however, implementations must be able to ingest arrays with other names when the
 interpretation is unambiguous (e.g., for xy and xyzm interleaved coordinate
 interpretations).
+
+### List types
+
+Arrow has multiple list types, including `List` (parameterized by int32 offsets), `LargeList` (parameterized by int64 offsets), and newer `ListView` and `LargeListView`.
+
+Implementations SHOULD accept `LargeList` int64 offset buffers but MAY produce only `List` int32 offset buffers.
+
+The `List` type will not overflow until there are `2^31 + 1` entries in the coordinates array. For two 8-byte floats, this would require 32GB of memory in a single coordinates array, and is thus unlikely to occur often in practice.
 
 ## Serialized encodings
 
