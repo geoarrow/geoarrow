@@ -40,20 +40,17 @@ metadata).
 When GeoArrow-encoded Arrays have the `ARROW:extension:metadata` metadata
 field set, it must be serialized as a UTF-8 encoded JSON object. The extension
 metadata specification is intentionally aligned with the
-[GeoParquet column metadata specifification](https://github.com/opengeospatial/geoparquet/blob/main/format-specs/geoparquet.md#metadata).
+[GeoParquet column metadata specifification](https://github.com/opengeospatial/geoparquet/blob/v1.1.0/format-specs/geoparquet.md#metadata).
 The following keys in the JSON metadata object are supported:
 
 - `crs`: One of:
 
     - A JSON object describing the coordinate reference system (CRS)
       using [PROJJSON](https://proj.org/specifications/projjson.html).
-    - A string containing an undefined CRS representation. This option
+    - A string containing a serialized CRS representation. This option
       is intended as a fallback for producers (e.g., database drivers or
       file readers) that are provided a CRS in some form but do not have the
-      means by which to convert it to PROJJSON. This specification makes no
-      guarantees about what this string may contain or how its contents should
-      be interpreted. As such, it is intended only as a last resort for producers
-      with no other option.
+      means to convert it to PROJJSON.
     - Omitted, indicating that the producer does not have any information about
       the CRS.
 
@@ -63,6 +60,25 @@ The following keys in the JSON metadata object are supported:
   [GeoPackage WKB binary encoding](https://www.geopackage.org/spec130/index.html#gpb_format):
   axis order is always (longitude, latitude) and (easting, northing)
   regardless of the the axis order encoded in the CRS specification.
+
+- `crs_type`: An optional string disambiguating the value of the `crs` field.
+  Must be omitted or a string value of:
+
+  - `"projjson"`: Indicates that the `"crs"` field was written as
+    [PROJJSON](https://proj.org/specifications/projjson.html).
+  - `"wkt2:2019"`: Indicates that the `"crs"` field was written as
+    [WKT2:2019](https://www.ogc.org/publications/standard/wkt-crs/).
+  - `"authority_code"`: Indicates that the `"crs"` field contains an identifier
+    in the form `AUTHORITY:CODE`. This should only be used as a last resort
+    (i.e., producers should prefer writing a complete description of the CRS).
+  - `"srid"`: Indicates that the `"crs"` field contains an opaque identifier
+    that requires the consumer to communicate with the producer outside of
+    this metadata. This should only be used as a last resort for database
+    drivers or readers that have no other option.
+
+  The `"crs_type"` should be omitted if the producer cannot guarantee the validity
+  of any of the above values (e.g., if it just serialized a CRS object
+  specifically into one of these representations).
 
 - `edges`: A value of `"spherical"` instructs consumers that edges follow
   a spherical path rather than a planar one. If this value is omitted,
