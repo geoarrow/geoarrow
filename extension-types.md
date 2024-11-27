@@ -38,7 +38,7 @@ metadata).
 ## Extension metadata
 
 When GeoArrow-encoded Arrays have the `ARROW:extension:metadata` metadata
-field set, it must be seriaized as a UTF-8 encoded JSON object. The extension
+field set, it must be serialized as a UTF-8 encoded JSON object. The extension
 metadata specification is intentionally aligned with the
 [GeoParquet column metadata specifification](https://github.com/opengeospatial/geoparquet/blob/main/format-specs/geoparquet.md#metadata).
 The following keys in the JSON metadata object are supported:
