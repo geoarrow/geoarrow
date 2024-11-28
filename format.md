@@ -1,7 +1,7 @@
-# GeoArrow: an Arrow-native storage format for vector geometries
+# GeoArrow Memory Layout Specification
 
 Spatial information can be represented as a collection of discrete objects
-using points, lines and polygons, i.e. vector data. The
+using points, lines, and polygons (i.e., vector data). The
 [Simple Feature Access](https://www.ogc.org/standards/sfa) standard provides
 a widely used abstraction, defining a set of geometries: Point, LineString,
 Polygon, MultiPoint, MultiLineString, MultiPolygon, GeometryCollection. Next
@@ -13,41 +13,45 @@ standardized language-independent columnar memory format. It enables shared
 computational libraries, zero-copy shared memory and streaming messaging,
 interprocess communication, etc and is supported by many programming
 languages. The Arrow columnar memory model is suited to store both vector
-features and its attribute data. This document specifies how such vector
+features and their attribute data. This document specifies how such vector
 features can be stored in Arrow (and Arrow-compatible) data structures.
 
-## Motivation
+The terminology for array types in this document is based on the
+[Arrow Columnar Format specification](https://arrow.apache.org/docs/format/Columnar.html).
 
-Standard ways to represent or serialize vector geometries include WKT (e.g.
+## Native encoding
+
+### Motivation
+
+Standard ways to represent or serialize vector geometries include WKT (e.g.,
 "POINT (0 0)"), WKB and GeoJSON. Each of those representations have a
 considerable (de)serialization cost, neither do they have a compute-friendly
 memory layout.
 
 The goal of this specification is to store geometries in an Arrow-compatible
-format that has 1) low (de)serialization overhead and 2) once in memory is
-cheap to convert to geospatial libraries (e.g. GEOS or JTS) or easy to
-directly operate on (e.g. directly working with the coordinate values).
+format that:
 
-Benefits of using the proposed Arrow-native format:
+- Has low (de)serialization overhead, and
+- Once in memory is cheap to convert to geospatial libraries (e.g., GEOS or JTS)
+  or easy to directly operate on (e.g., directly working with the coordinate values).
 
-- Cheap access to the raw coordinate values for all geometries.
-- Columnar data layout.
+Benefits of using the proposed Arrow-native format include:
+
+- Cheap access to the raw coordinate values for all geometries,
+- Columnar data layout, and
 - Full data type system of Arrow is available for attribute data.
 
-More specifically, the Arrow geometry specification stores the raw coordinates
-values in contiguous arrays with enough metadata (offsets) to reconstruct or
-interpret as actual geometries.
+More specifically, the Arrow geometry specification stores the raw coordinate
+values in contiguous buffers with enough metadata (offsets) to reconstruct or
+interpret them as actual geometries.
 
 [FlatGeoBuf](https://flatgeobuf.org/) is similar on various aspects, but is
-record-oriented, while Arrow is column-oriented.
+record-oriented, whereas Arrow is column-oriented.
 
-## Format
-
-The terminology for array types in this section is based on the
-[Arrow Columnar Format specification](https://arrow.apache.org/docs/format/Columnar.html).
+### Memory layouts
 
 GeoArrow proposes a packed columnar data format for the fundamental geometry
-types, using packed coordinate and offset arrays to define geometry objects.
+types using packed coordinate and offset arrays to define geometry objects.
 
 The inner level is always an array of coordinates. For any geometry type except
 Point, this inner level is nested in one or multiple
@@ -63,7 +67,11 @@ implementations evolve, this specification may grow to support other coordinate
 representations or shrink to support only one if supporting multiple
 representations becomes a barrier to adoption.
 
-**Coordinate (separated)**: `Struct<x: double, y: double, [z: double, [m: double>]]`
+#### Coordinate (separated)
+
+```
+Struct<x: double, y: double, [z: double, [m: double>]]
+```
 
 An array of coordinates can be stored as a Struct array containing two or more
 child double arrays with names corresponding to the dimension represented by
@@ -71,7 +79,11 @@ the child. The first and second child arrays must represent the x and y
 dimension; where z and m dimensions are both included, the z dimension must
 preceed the m dimension.
 
-**Coordinate (interleaved)**: `FixedSizeList<double>[n_dim]`
+#### Coordinate (interleaved)
+
+```
+FixedSizeList<double>[n_dim]
+```
 
 An array of coordinates may also be represented by a single array
 of interleaved coordinates. `n_dim` can be 2, 3, or 4 depending on the
@@ -79,34 +91,56 @@ dimensionality of the geometries, and the field name of the list should
 be "xy", "xyz" or "xyzm", reflecting the dimensionality. Compared to
 the `Struct` representation of a coordinate array, this representation may
 provide better performance for some operations and/or provide better
-compatability with the memory layout of existing libraries.
+compatibility with the memory layout of existing libraries.
 
-**Point**: `Coordinate`
+#### Point
+
+```
+Coordinate
+```
 
 An array of point geometries is represented as an array of coordinates,
 which may be encoded according to either of the options above.
 
-**LineString**: `List<Coordinate>`
+#### LineString
+
+```
+List<Coordinate>
+```
 
 An array of LineStrings is represented as a nested list array with one
 level of outer nesting: each element of the array (LineString) is a
 list of xy vertices. The child name of the outer list should be "vertices".
 
-**Polygon**: `List<List<Coordinate>>`
+#### Polygon
+
+```
+List<List<Coordinate>>
+```
 
 An array of Polygons is represented as a nested list array with two levels of
 outer nesting: each element of the array (Polygon) is a list of rings (the
 first ring is the exterior ring, optional subsequent rings are interior
 rings), and each ring is a list of xy vertices. The child name of the outer
 list should be "rings"; the child name of the inner list should be "vertices".
+The first coordinate and the last coordinate of a ring must be identical
+(i.e., rings must be closed).
 
-**MultiPoint**: `List<Coordinate>`
+#### MultiPoint
+
+```
+List<Coordinate>
+```
 
 An array of MultiPoints is represented as a nested list array, where each outer
 list is a single MultiPoint (i.e. a list of xy coordinates). The child name of
 the outer `List` should be "points".
 
-**MultiLineString**: `List<List<Coordinate>>`
+#### MultiLineString
+
+```
+List<List<Coordinate>>
+```
 
 An array of MultiLineStrings is represented as a nested list array with two
 levels of outer nesting: each element of the array (MultiLineString) is a
@@ -114,7 +148,11 @@ list of LineStrings, which consist itself of a list xy vertices (see above).
 The child name of the outer list should be "linestrings"; the child name of
 the inner list should be "vertices".
 
-**MultiPolygon**: `List<List<List<Coordinate>>>`
+#### MultiPolygon
+
+```
+List<List<List<Coordinate>>>
+```
 
 An array of MultiPolygons is represented as a nested list array with three
 levels of outer nesting: each element of the array (MultiPolygon) is a list
@@ -123,6 +161,25 @@ exterior ring, optional subsequent rings are interior rings), and each ring
 is a list of xy vertices. The child name of the outer list should be "polygons";
 the child name of the middle list should be "rings"; the child name of the
 inner list should be "vertices".
+
+#### Box
+
+```
+Struct<xmin: double, ymin: double, [zmin: double, [mmin: double>]], xmax: double, ymax: double, [zmax: double, [mmax: double>]]
+
+```
+
+An array of axis-aligned rectangles is represented as a Struct array containing
+four, six, or eight child double arrays with names corresponding to the
+dimension represented by the child. This was chosen to align with the covering column
+definition in the GeoParquet specification.
+
+The child fields MUST be named and ordered as follows for the given dimension:
+
+- XY: `[xmin, ymin, xmax, ymax]`
+- XYZ: `[xmin, ymin, zmin, xmax, ymax, zmax]`
+- XYM: `[xmin, ymin, mmin, xmax, ymax, mmax]`
+- XYZM: `[xmin, ymin, zmin, mmin, xmax, ymax, zmax, mmax]`
 
 ### Missing values (nulls)
 
@@ -139,33 +196,76 @@ ring or a point with a null x value).
 ### Empty geometries
 
 Except for Points, empty geometries can be faithfully represented as an
-empty inner list.
+empty outer list.
 
 Empty points can be represented as `POINT (NaN NaN)`.
 
 ### GeometryCollection
 
-GeometryCollections are not yet included in the format description above,
-but it is planned to add this later. GeometryCollections can be represented
-using a [union type](https://arrow.apache.org/docs/format/Columnar.html#union-layout)
-of the other geometry types.
+GeometryCollection features cannot yet be represented using a native encoding. Future
+support is planned using an
+[Arrow union type](https://arrow.apache.org/docs/format/Columnar.html#union-layout).
+
+GeometryCollection features can be represented using a serialized encoding (WKB or WKT),
+see below.
 
 ### Mixed Geometry types
 
-When having mixed single and multi geometries of the same type (for example,
-Polygon and MultiPolygon), those can be stored together in a MultiPolygon
-layout, with the convention that a length-1 MultiPolygon represents a
-Polygon.
+Arrays containing features of mixed geometry types cannot yet be represented using a
+native encoding. Future support is planned using an
+[Arrow union type](https://arrow.apache.org/docs/format/Columnar.html#union-layout).
 
-Truly mixed geometry types can be supported as a union of the other geometry
-types, and it is planned to add a description of this later.
+Note that single and multi geometries of the same type can be stored together in a Multi
+encoding. For example, a mix of Polygon and MultiPolygon can be stored as MultiPolygons,
+with a Polygon being represented as a length-1 MultiPolygon.
+
+Arrays with mixed geometry types can be represented using a serialized encoding (WKB or
+WKT), see below.
 
 ### Field and child names
 
-All geometry types should have fields and child names as suggested for each,
-however implementations must be able to ingest arrays with other names when the
+All geometry types should have field and child names as suggested for each;
+however, implementations must be able to ingest arrays with other names when the
 interpretation is unambiguous (e.g., for xy and xyzm interleaved coordinate
 interpretations).
+
+### List types
+
+Arrow has multiple list types, including `List` (parameterized by int32 offsets), `LargeList` (parameterized by int64 offsets), and newer `ListView` and `LargeListView`.
+
+Implementations SHOULD accept `LargeList` int64 offset buffers but MAY produce only `List` int32 offset buffers.
+
+The `List` type will not overflow until there are `2^31 + 1` entries in the coordinates array. For two 8-byte floats, this would require 32GB of memory in a single coordinates array, and is thus unlikely to occur often in practice.
+
+## Serialized encodings
+
+Whereas there are many advantages to storing data in the native encoding,
+many producers of geospatial data (e.g., database drivers, file readers)
+do not have a full geospatial stack at their disposal. The serialized encodings
+are provided to accomodate these producers and provide every opportunity to
+propagate critical metadata (e.g., CRS).
+
+**Well-known binary (WKB)**: `Binary` or `LargeBinary`
+
+It may be useful for implementations that already have facilities to read
+and/or write well-known binary (WKB) to store features in this form without
+modification. For maximum compatibility producers should write ISO-flavoured
+WKB where possible; however, consumers may accept EWKB or ISO flavoured WKB.
+Consumers may ignore any embedded SRID values in EWKB.
+
+The Arrow `Binary` type is composed of two buffers: a buffer
+of `int32` offsets and a `uint8` data buffer. The `LargeBinary` type is
+composed of an `int64` offset buffer and a `uint8` data buffer.
+
+**Well-known text (WKT)**: `Utf8` or `LargeUtf8`
+
+It may be useful for implementations that already have facilities to read
+and/or write well-known text (WKT) to store features in this form without
+modification.
+
+The Arrow `Utf8` type is composed of two buffers: a buffer
+of `int32` offsets and a `char` data buffer. The `LargeUtf8` type is composed of
+an `int64` offset buffer and a `char` data buffer.
 
 ## Concrete examples of the memory layout
 
@@ -328,3 +428,28 @@ Physical representation (buffers):
 
 If using a struct coordinate representation, the coordinates buffer would be replaced
 by two buffers containing coordinate x and coordinate y values.
+
+**WKT**
+
+Arrow type: `Utf8`
+
+For an array of WKT geometries, a buffer of offsets indicate where the text of each
+feature begins.
+
+Example of array with 2 features:
+
+WKT: `["MULTIPOINT (0 0, 0 1)", "POINT (30 10)"]`
+
+Logical representation:
+
+```
+[
+    "MULTIPOINT (0 0, 0 1)",
+    "POINT (30 10)"
+]
+```
+
+Physical representation (buffers):
+
+* Data: `b"MULTIPOINT (0 0, 0 1)POINT (30 10)"`
+* Feature offsets: `[0, 21, 46]`
