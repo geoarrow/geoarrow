@@ -55,7 +55,11 @@ The following keys in the JSON metadata object are supported:
     - Omitted, indicating that the producer does not have any information about
       the CRS.
 
-  For maximum compatibility, producers should write PROJJSON where possible.
+  For maximum compatibility, producers should write PROJJSON. Producers should not
+  write an escaped JSON object to the `crs` key (i.e., when serializing an unknown
+  string to the `crs` key, producers should check for a valid JSON object and should
+  not escape the input and write it as a string).
+
   Note that regardless of the axis order specified by the CRS, axis order will be interpreted
   according to the wording in the
   [GeoPackage WKB binary encoding](https://www.geopackage.org/spec130/index.html#gpb_format):
