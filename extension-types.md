@@ -57,6 +57,7 @@ The following keys in the JSON metadata object are supported:
 
   For maximum compatibility, producers should write PROJJSON where possible.
   Note that regardless of the axis order specified by the CRS, axis order will be interpreted
+  according to the wording in the
   [GeoPackage WKB binary encoding](https://www.geopackage.org/spec130/index.html#gpb_format):
   axis order is always (longitude, latitude) and (easting, northing)
   regardless of the the axis order encoded in the CRS specification.
