@@ -97,7 +97,7 @@ The following keys in the JSON metadata object are supported:
   specifically into one of these representations).
 
 - `edges`: An optional JSON string describing the interpretation of edges
-  between explicitly defined vertices. This does typically affect format
+  between explicitly defined vertices. This does not affect format
   conversions (e.g., parsing `geoarrow.wkb` as `geoarrow.linestring`),
   but does affect distance, intersection, overlay, length, and area calculations.
   The `edges` key must be omitted or be one of:
