@@ -107,8 +107,7 @@ The following keys in the JSON metadata object are supported:
     interpretation is used by
     [BigQuery Geography](https://cloud.google.com/bigquery/docs/geospatial-data#coordinate_systems_and_edges),
     and [Snowflake Geography](https://docs.snowflake.com/en/sql-reference/data-types-geospatial).
-    A common library for
-    interpreting edges in this way is
+    A common library for interpreting edges in this way is
     [Google's s2geometry](https://github.com/google/s2geometry).
   - `"geodesic"`: Edges follow the shortest distance between vertices on the
     ellipsoid defined by the `crs` key. This edge interpretation is used by
@@ -145,7 +144,8 @@ The following keys in the JSON metadata object are supported:
 
   Implementations may implicitly import arrays with an unsupported edge type if the
   arrays do not contain edges. Implementations may otherwise import arrays with an
-  unsupported edge type with an explicit opt-in from a user or a prominent warning.
+  unsupported edge type with an explicit opt-in from a user or if accompanied
+  by a prominent warning.
 
 If all metadata keys are omitted, the `ARROW:extension:metadata` should
 also be omitted.
