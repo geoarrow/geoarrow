@@ -163,6 +163,7 @@ the child name of the middle list should be "rings"; the child name of the
 inner list should be "vertices".
 
 #### Geometry
+
 ```
 DenseUnion
 ```
@@ -175,41 +176,47 @@ children include one or more of the above geometry array types.
 
 The geometry array allows for elements in the array to be of different geometry types.
 
-- The union array may not contain more than one child array of a given geometry type.
 - The "type ids" and field name of the union field metadata must be defined as such:
 
-    | Type ID | Geometry type      | Field name             |
-    | ------- | ------------------ | ---------------------- |
-    | 1       | Point              | `"Point"`              |
-    | 2       | LineString         | `"LineString"`         |
-    | 3       | Polygon            | `"Polygon"`            |
-    | 4       | MultiPoint         | `"MultiPoint"`         |
-    | 5       | MultiLineString    | `"MultiLineString"`    |
-    | 6       | MultiPolygon       | `"MultiPolygon"`       |
-    | 11      | Point Z            | `"Point Z"`            |
-    | 12      | LineString Z       | `"LineString Z"`       |
-    | 13      | Polygon Z          | `"Polygon Z"`          |
-    | 14      | MultiPoint Z       | `"MultiPoint Z"`       |
-    | 15      | MultiLineString Z  | `"MultiLineString Z"`  |
-    | 16      | MultiPolygon Z     | `"MultiPolygon Z"`     |
-    | 21      | Point M            | `"Point M"`            |
-    | 22      | LineString M       | `"LineString M"`       |
-    | 23      | Polygon M          | `"Polygon M"`          |
-    | 24      | MultiPoint M       | `"MultiPoint M"`       |
-    | 25      | MultiLineString M  | `"MultiLineString M"`  |
-    | 26      | MultiPolygon M     | `"MultiPolygon M"`     |
-    | 31      | Point ZM           | `"Point ZM"`           |
-    | 32      | LineString ZM      | `"LineString ZM"`      |
-    | 33      | Polygon ZM         | `"Polygon ZM"`         |
-    | 34      | MultiPoint ZM      | `"MultiPoint ZM"`      |
-    | 35      | MultiLineString ZM | `"MultiLineString ZM"` |
-    | 36      | MultiPolygon ZM    | `"MultiPolygon ZM"`    |
+  | Type ID | Geometry type         | Field name                |
+  | ------- | --------------------- | ------------------------- |
+  | 1       | Point                 | `"Point"`                 |
+  | 2       | LineString            | `"LineString"`            |
+  | 3       | Polygon               | `"Polygon"`               |
+  | 4       | MultiPoint            | `"MultiPoint"`            |
+  | 5       | MultiLineString       | `"MultiLineString"`       |
+  | 6       | MultiPolygon          | `"MultiPolygon"`          |
+  | 7       | GeometryCollection    | `"GeometryCollection"`    |
+  | 11      | Point Z               | `"Point Z"`               |
+  | 12      | LineString Z          | `"LineString Z"`          |
+  | 13      | Polygon Z             | `"Polygon Z"`             |
+  | 14      | MultiPoint Z          | `"MultiPoint Z"`          |
+  | 15      | MultiLineString Z     | `"MultiLineString Z"`     |
+  | 16      | MultiPolygon Z        | `"MultiPolygon Z"`        |
+  | 17      | GeometryCollection Z  | `"GeometryCollection Z"`  |
+  | 21      | Point M               | `"Point M"`               |
+  | 22      | LineString M          | `"LineString M"`          |
+  | 23      | Polygon M             | `"Polygon M"`             |
+  | 24      | MultiPoint M          | `"MultiPoint M"`          |
+  | 25      | MultiLineString M     | `"MultiLineString M"`     |
+  | 26      | MultiPolygon M        | `"MultiPolygon M"`        |
+  | 27      | GeometryCollection M  | `"GeometryCollection M"`  |
+  | 31      | Point ZM              | `"Point ZM"`              |
+  | 32      | LineString ZM         | `"LineString ZM"`         |
+  | 33      | Polygon ZM            | `"Polygon ZM"`            |
+  | 34      | MultiPoint ZM         | `"MultiPoint ZM"`         |
+  | 35      | MultiLineString ZM    | `"MultiLineString ZM"`    |
+  | 36      | MultiPolygon ZM       | `"MultiPolygon ZM"`       |
+  | 37      | GeometryCollection ZM | `"GeometryCollection ZM"` |
 
-    These type id values were chosen to match the WKB specification exactly for 2D geometries and match the WKB specification conceptually for Z, M, and ZM geometries, given the constraint that an Arrow union type ID must be between 0 and 127.
+  These type id values were chosen to match the WKB specification exactly for 2D geometries and match the WKB specification conceptually for Z, M, and ZM geometries, given the constraint that an Arrow union type ID must be between 0 and 127.
 
-- A geometry array does not need to contain _all_ possible children arrays, but those children arrays must have the type ids defined above.
-- All children arrays of a geometry array must have the same dimensionality. So `Point` and `Polygon` arrays may be combined in a geometry array, but `Point` and `Polygon Z` arrays may not be.
+- A geometry array does not need to contain _all_ possible children arrays, but the children arrays that it does contain must have the type ids defined above.
+- Children arrays of a geometry array do not need to have the same dimensionality. It will often be easier in practice to store only data of a single dimension, but allowing the geometry array concept to store any mix of types and dimensions enables a static schema for unknown input data.
 - The children arrays should not themselves contain GeoArrow metadata. Only the top-level geometry array should contain GeoArrow metadata.
+- GeometryCollections are allowed as children to make this Geometry array the most general of all geometry types.
+
+    Any geometries stored in GeometryCollection children will not be stored in contiguous memory with other children. E.g. any points within the `GeometryCollection` child will not be contiguous with the `Point` child. If not needed, avoid storing data in GeometryCollection children for best performance.
 
 Note that single and multi geometries of the same type can be stored together in
 a Multi encoding without using this geometry type. For example, a mix of Polygon
@@ -220,18 +227,48 @@ array if possible because it has less overhead per geometry.
 #### GeometryCollection
 
 ```
-List<Geometry>
+List<DenseUnion>>
 ```
 
-An array of GeometryCollections is represented as a list containing the above
-geometry array. Each element of the array thus represents one or more geometries
-of varied type. The child name of the outer list should be "geometries".
+An array of GeometryCollections is represented as a list of a dense union array. In order to explicitly deny support for recursive geometry collections, this definition is not made in terms of the above Geometry array, but re-defines
+
+
+- The valid "type ids" and field name of the union field metadata must be defined as follows:
+
+  | Type ID | Geometry type         | Field name                |
+  | ------- | --------------------- | ------------------------- |
+  | 1       | Point                 | `"Point"`                 |
+  | 2       | LineString            | `"LineString"`            |
+  | 3       | Polygon               | `"Polygon"`               |
+  | 4       | MultiPoint            | `"MultiPoint"`            |
+  | 5       | MultiLineString       | `"MultiLineString"`       |
+  | 6       | MultiPolygon          | `"MultiPolygon"`          |
+  | 11      | Point Z               | `"Point Z"`               |
+  | 12      | LineString Z          | `"LineString Z"`          |
+  | 13      | Polygon Z             | `"Polygon Z"`             |
+  | 14      | MultiPoint Z          | `"MultiPoint Z"`          |
+  | 15      | MultiLineString Z     | `"MultiLineString Z"`     |
+  | 16      | MultiPolygon Z        | `"MultiPolygon Z"`        |
+  | 21      | Point M               | `"Point M"`               |
+  | 22      | LineString M          | `"LineString M"`          |
+  | 23      | Polygon M             | `"Polygon M"`             |
+  | 24      | MultiPoint M          | `"MultiPoint M"`          |
+  | 25      | MultiLineString M     | `"MultiLineString M"`     |
+  | 26      | MultiPolygon M        | `"MultiPolygon M"`        |
+  | 31      | Point ZM              | `"Point ZM"`              |
+  | 32      | LineString ZM         | `"LineString ZM"`         |
+  | 33      | Polygon ZM            | `"Polygon ZM"`            |
+  | 34      | MultiPoint ZM         | `"MultiPoint ZM"`         |
+  | 35      | MultiLineString ZM    | `"MultiLineString ZM"`    |
+  | 36      | MultiPolygon ZM       | `"MultiPolygon ZM"`       |
+
+- The union array may not contain more than one child array of a given geometry type. So `Point` and `PointZ` are not permitted in the same array.
+- All children arrays of the union array must have the same dimensionality. So `Point` and `Polygon` arrays may both be children, but `Point` and `Polygon Z` arrays may not be.
 
 #### Box
 
 ```
 Struct<xmin: double, ymin: double, [zmin: double, [mmin: double>]], xmax: double, ymax: double, [zmax: double, [mmax: double>]]
-
 ```
 
 An array of axis-aligned rectangles is represented as a Struct array containing
