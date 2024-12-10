@@ -216,7 +216,7 @@ The geometry array allows for elements in the array to be of different geometry 
 - The children arrays should not themselves contain GeoArrow metadata. Only the top-level geometry array should contain GeoArrow metadata.
 - GeometryCollections are allowed as children to make this Geometry array the most general of all geometry types.
 
-    Any geometries stored in GeometryCollection children will not be stored in contiguous memory with other children. E.g. any points within the `GeometryCollection` child will not be contiguous with the `Point` child. If not needed, avoid storing data in GeometryCollection children for best performance.
+  Any geometries stored in GeometryCollection children will not be stored in contiguous memory with other children. E.g. any points within the `GeometryCollection` child will not be contiguous with the `Point` child. If not needed, avoid storing data in GeometryCollection children for best performance.
 
 Note that single and multi geometries of the same type can be stored together in
 a Multi encoding without using this geometry type. For example, a mix of Polygon
