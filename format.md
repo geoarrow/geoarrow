@@ -262,8 +262,7 @@ An array of GeometryCollections is represented as a list of a dense union array.
   | 35      | MultiLineString ZM    | `"MultiLineString ZM"`    |
   | 36      | MultiPolygon ZM       | `"MultiPolygon ZM"`       |
 
-- The union array may not contain more than one child array of a given geometry type. So `Point` and `PointZ` are not permitted in the same array.
-- All children arrays of the union array must have the same dimensionality. So `Point` and `Polygon` arrays may both be children, but `Point` and `Polygon Z` arrays may not be.
+- The union array may not contain more than one child array of a given geometry type. All children arrays of the union array must have the same dimensionality. So `Point` and `Polygon` arrays may both be children, but neither `Point` and `PointZ`, nor `Point` and `Polygon Z` arrays are permitted to be combined.
 
 #### Box
 
