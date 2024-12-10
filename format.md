@@ -216,7 +216,7 @@ The geometry array allows for elements in the array to be of different geometry 
 - The children arrays should not themselves contain GeoArrow metadata. Only the top-level geometry array should contain GeoArrow metadata.
 - GeometryCollections are allowed as children to make this Geometry array the most general of all geometry types.
 
-    Any geometries stored in GeometryCollection children will not be stored in contiguous memory with other children. E.g. any points within the `GeometryCollection` child will not be contiguous with the `Point` child. If not needed, avoid storing data in GeometryCollection children for best performance.
+  Any geometries stored in GeometryCollection children will not be stored in contiguous memory with other children. E.g. any points within the `GeometryCollection` child will not be contiguous with the `Point` child. If not needed, avoid storing data in GeometryCollection children for best performance.
 
 Note that single and multi geometries of the same type can be stored together in
 a Multi encoding without using this geometry type. For example, a mix of Polygon
@@ -262,7 +262,7 @@ An array of GeometryCollections is represented as a list of a dense union array.
   | 35      | MultiLineString ZM    | `"MultiLineString ZM"`    |
   | 36      | MultiPolygon ZM       | `"MultiPolygon ZM"`       |
 
-- The union array may not contain more than one child array of a given geometry type. All children arrays of the union array must have the same dimensionality. So `Point` and `Polygon` arrays may both be children, but neither `Point` and `PointZ`, nor `Point` and `Polygon Z` arrays are permitted to be combined.
+- The union array may not contain more than one child array of a given geometry type. All children arrays of the union array must have the same dimensionality. So `Point` and `Polygon` arrays may both be children, but neither `Point` and `Point Z`, nor `Point` and `Polygon Z` arrays are permitted to be combined.
 
 #### Box
 
