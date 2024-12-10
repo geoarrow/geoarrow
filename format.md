@@ -230,7 +230,7 @@ array if possible because it has less overhead per geometry.
 List<DenseUnion>>
 ```
 
-An array of GeometryCollections is represented as a list of a dense union array. In order to explicitly deny support for recursive geometry collections, this definition is not made in terms of the above Geometry array, but re-defines
+An array of GeometryCollections is represented as a list of a dense union array. In order to explicitly deny support for recursive geometry collections, this definition is not made in terms of the above Geometry array, but re-defines the internal union explicitly.
 
 
 - The valid "type ids" and field name of the union field metadata must be defined as follows:
