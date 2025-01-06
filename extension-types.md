@@ -99,23 +99,32 @@ The following keys in the JSON metadata object are supported:
 - `edges`: An optional JSON string describing the interpretation of edges
   between explicitly defined vertices. This does not affect format
   conversions (e.g., parsing `geoarrow.wkb` as `geoarrow.linestring`),
-  but does affect distance, intersection, overlay, length, and area calculations.
-  The `edges` key must be omitted or be one of:
+  but does affect distance, intersection, bounding, overlay, length, and
+  area calculations. The `edges` key must be omitted to indicate planar/linear
+  edges or be one of:
 
-  - `"spherical"`: Edges follow the shortest distance between vertices approximated
-    as the shortest distance between the vertices on a perfect sphere. This edge
-    interpretation is used by
+  - `"spherical"`: Edges in the longitude-latitude dimensions follow the
+    shortest distance between vertices approximated as the shortest distance
+    between the vertices on a perfect sphere. This edge interpretation is used by
     [BigQuery Geography](https://cloud.google.com/bigquery/docs/geospatial-data#coordinate_systems_and_edges),
     and [Snowflake Geography](https://docs.snowflake.com/en/sql-reference/data-types-geospatial).
     A common library for interpreting edges in this way is
-    [Google's s2geometry](https://github.com/google/s2geometry).
-  - `"geodesic"`: Edges follow the shortest distance between vertices on the
-    ellipsoid defined by the `crs` key. This edge interpretation is used by
-    [Microsoft SQL Server Geography](https://learn.microsoft.com/en-us/sql/t-sql/spatial-geography/spatial-types-geography),
-    [Amazon Redshift Geography](https://docs.aws.amazon.com/redshift/latest/dg/geospatial-overview.html),
-    and [PostGIS](https://postgis.net/docs/geography.html). A common library for
-    interpreting edges in this way is
-    [GeographicLib](https://github.com/geographiclib/geographiclib).
+    [Google's s2geometry](https://github.com/google/s2geometry); a common formula
+    for calculating distances along this trajectory is the
+    [Haversine Formula](https://en.wikipedia.org/wiki/Haversine_formula).
+  - `"vincenty"`: Edges in the longitude-latitude dimensions follow a path calculated
+    using [Vincenty's formula](https://en.wikipedia.org/wiki/Vincenty%27s_formulae).
+  - `"thomas"`:  Edges in the longitude-latitude dimensions follow a path calculated by
+    the fomula in Thomas, Paul D. Spheroidal geodesics, reference systems, & local geometry.
+    US Naval Oceanographic Office, 1970.
+  - `"andoyer"`: Edges in the longitude-latitude dimensions follow a path calculated by
+    the fomula in Thomas, Paul D. Mathematical models for navigation systems. US Naval
+    Oceanographic Office, 1965.
+  - `"karney"`: Edges in the longitude-latitude dimensions follow a path calculated by
+    the fomula in
+    [Karney, Charles FF. "Algorithms for geodesics." Journal of Geodesy 87 (2013): 43-55](https://link.springer.com/content/pdf/10.1007/s00190-012-0578-z.pdf)
+    and [GeographicLib](https://geographiclib.sourceforge.io/) (which is also available
+    via modern versions of PROJ).
 
   If the `edges` key is omitted, edges will be interpreted following the language of
   [Simple features access](https://www.opengeospatial.org/standards/sfa):
@@ -125,8 +134,8 @@ The following keys in the JSON metadata object are supported:
 
   When converting an array from one GeoArrow type to another, the `"edges"` field
   should be propagated from the source to the destination. For example, when parsing
-  a `geoarrow.wkb` with `"edges": "geodesic"` to `geoarrow.linestring`, the `edges`
-  key of the destination type should also be `"geodesic"`.
+  a `geoarrow.wkb` with `"edges": "spherical"` to `geoarrow.linestring`, the `edges`
+  key of the destination type should also be `"spherical"`.
 
   If an implementation only has support for a single edge interpretation (e.g.,
   a library with only planar edge support), an array with a different edge type
@@ -137,15 +146,18 @@ The following keys in the JSON metadata object are supported:
   the error introduced by ignoring the original edge interpretation is similar to
   the error introduced by applying a coordinate transformation to vertices (which
   is usually small but may be large or create invalid geometries, particularly if
-  vertices are not closely spaced). Ignroing the original edge interpretation will
+  vertices are not closely spaced). Ignoring the original edge interpretation will
   silently introduce invalid and/or misinterpreted geometries for any edge that crosses
-  the antimeridian (i.e., longitude 180/-180) when translating from `"spherical"` or
-  `"geodesic"` edges to planar edges.
+  the antimeridian (i.e., longitude 180/-180) when translating from non-planar
+  to planar edges.
 
   Implementations may implicitly import arrays with an unsupported edge type if the
   arrays do not contain edges. Implementations may otherwise import arrays with an
   unsupported edge type with an explicit opt-in from a user or if accompanied
   by a prominent warning.
+
+  Implementations of `spherical`, `vincenty`, `thomas`, and `andoyer` are available via
+  [Boost::geometry](https://www.boost.org/doc/libs/1_87_0/libs/geometry/doc/html/index.html).
 
 If all metadata keys are omitted, the `ARROW:extension:metadata` should
 also be omitted.
