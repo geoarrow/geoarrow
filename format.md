@@ -283,6 +283,22 @@ The child fields MUST be named and ordered as follows for the given dimension:
 - XYM: `[xmin, ymin, mmin, xmax, ymax, mmax]`
 - XYZM: `[xmin, ymin, zmin, mmin, xmax, ymax, zmax, mmax]`
 
+These bounds refer to a set of points such that a value `v` intersects a box if
+`v >= vmin` AND `v <= vmax` for `v` in [`x`, `y`, `z`, `m`].
+
+If `xmin > xmax`, a box may intersect a value `x` if  `x >= xmin` OR `x <= xmax` and if 
+`ymin > ymax`, a box may intersect a value `y` if  `y >= ymin` OR `y <= ymax`. This behaviour
+is designed to support compact bounds for geometries that happen to straddle the antimeridian.
+This behaviour ensures that a
+[GeoJSON bounding box](https://datatracker.ietf.org/doc/html/rfc7946#section-5.2), a
+GeoParquet file metadata bounding box (also based on GeoJSON), and a box derived from the
+Iceberg 3.0 specification for geometry and geography column statistics may be expressed
+as a GeoArrow Box without inspecting values. This exception does not apply to dimensions
+other than `x` and `y`.
+
+Empty ranges may be expressed by setting the `min` value to infinity and the `max` value to
+-infinity for any dimension.
+
 ### Missing values (nulls)
 
 Arrow supports missing values through a validity bitmap, and for nested data
