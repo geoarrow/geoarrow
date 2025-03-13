@@ -113,18 +113,20 @@ The following keys in the JSON metadata object are supported:
     for calculating distances along this trajectory is the
     [Haversine Formula](https://en.wikipedia.org/wiki/Haversine_formula).
   - `"vincenty"`: Edges in the longitude-latitude dimensions follow a path calculated
-    using [Vincenty's formula](https://en.wikipedia.org/wiki/Vincenty%27s_formulae).
+    using [Vincenty's formula](https://en.wikipedia.org/wiki/Vincenty%27s_formulae) and
+    the ellipsoid specified by the `"crs"`.
   - `"thomas"`:  Edges in the longitude-latitude dimensions follow a path calculated by
     the fomula in Thomas, Paul D. Spheroidal geodesics, reference systems, & local geometry.
-    US Naval Oceanographic Office, 1970.
+    US Naval Oceanographic Office, 1970 using the ellipsoid specified by the `"crs"`.
   - `"andoyer"`: Edges in the longitude-latitude dimensions follow a path calculated by
     the fomula in Thomas, Paul D. Mathematical models for navigation systems. US Naval
-    Oceanographic Office, 1965.
+    Oceanographic Office, 1965 using the ellipsoid specified by the `"crs"`.
   - `"karney"`: Edges in the longitude-latitude dimensions follow a path calculated by
     the fomula in
     [Karney, Charles FF. "Algorithms for geodesics." Journal of Geodesy 87 (2013): 43-55](https://link.springer.com/content/pdf/10.1007/s00190-012-0578-z.pdf)
-    and [GeographicLib](https://geographiclib.sourceforge.io/) (which is also available
-    via modern versions of PROJ).
+    and [GeographicLib](https://geographiclib.sourceforge.io/)
+    using the ellipsoid specified by the `"crs"`. GeographicLib available via modern
+    versions of PROJ.
 
   If the `edges` key is omitted, edges will be interpreted following the language of
   [Simple features access](https://www.opengeospatial.org/standards/sfa):
