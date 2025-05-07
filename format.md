@@ -245,7 +245,7 @@ do not have a full geospatial stack at their disposal. The serialized encodings
 are provided to accomodate these producers and provide every opportunity to
 propagate critical metadata (e.g., CRS).
 
-**Well-known binary (WKB)**: `Binary` or `LargeBinary`
+**Well-known binary (WKB)**: `Binary`, `LargeBinary`, or `BinaryView`
 
 It may be useful for implementations that already have facilities to read
 and/or write well-known binary (WKB) to store features in this form without
@@ -257,7 +257,7 @@ The Arrow `Binary` type is composed of two buffers: a buffer
 of `int32` offsets and a `uint8` data buffer. The `LargeBinary` type is
 composed of an `int64` offset buffer and a `uint8` data buffer.
 
-**Well-known text (WKT)**: `Utf8` or `LargeUtf8`
+**Well-known text (WKT)**: `Utf8`, `LargeUtf8`, or `Utf8View`
 
 It may be useful for implementations that already have facilities to read
 and/or write well-known text (WKT) to store features in this form without
