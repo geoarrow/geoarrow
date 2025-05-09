@@ -96,11 +96,12 @@ compatibility with the memory layout of existing libraries.
 #### Point
 
 ```
-Coordinate
+Struct<coordinate: Coordinate, empty: bool>
 ```
 
-An array of point geometries is represented as an array of coordinates,
-which may be encoded according to either of the options above.
+An array of point geometries is represented as a Struct array with a 
+`coordinate` and `empty` field. The array of coordinates may be encoded 
+according to either of the options above.
 
 #### LineString
 
@@ -315,7 +316,7 @@ ring or a point with a null x value).
 Except for Points, empty geometries can be faithfully represented as an
 empty outer list.
 
-Empty points can be represented as `POINT (NaN NaN)`.
+Empty points can be represented with the empty field.
 
 ### Field and child names
 
