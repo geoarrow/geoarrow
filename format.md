@@ -162,11 +162,113 @@ is a list of xy vertices. The child name of the outer list should be "polygons";
 the child name of the middle list should be "rings"; the child name of the
 inner list should be "vertices".
 
+#### GeometryCollection
+
+```
+List<DenseUnion>>
+```
+
+An array of GeometryCollections is represented as a list of a dense union array. In order to explicitly deny support for recursive geometry collections, this definition is not made in terms of the above Geometry array, but re-defines the internal union explicitly.
+
+
+- The valid "type ids" and field name of the union field metadata must be defined as follows:
+
+  | Type ID | Geometry type         | Field name                |
+  | ------- | --------------------- | ------------------------- |
+  | 1       | Point                 | `"Point"`                 |
+  | 2       | LineString            | `"LineString"`            |
+  | 3       | Polygon               | `"Polygon"`               |
+  | 4       | MultiPoint            | `"MultiPoint"`            |
+  | 5       | MultiLineString       | `"MultiLineString"`       |
+  | 6       | MultiPolygon          | `"MultiPolygon"`          |
+  | 11      | Point Z               | `"Point Z"`               |
+  | 12      | LineString Z          | `"LineString Z"`          |
+  | 13      | Polygon Z             | `"Polygon Z"`             |
+  | 14      | MultiPoint Z          | `"MultiPoint Z"`          |
+  | 15      | MultiLineString Z     | `"MultiLineString Z"`     |
+  | 16      | MultiPolygon Z        | `"MultiPolygon Z"`        |
+  | 21      | Point M               | `"Point M"`               |
+  | 22      | LineString M          | `"LineString M"`          |
+  | 23      | Polygon M             | `"Polygon M"`             |
+  | 24      | MultiPoint M          | `"MultiPoint M"`          |
+  | 25      | MultiLineString M     | `"MultiLineString M"`     |
+  | 26      | MultiPolygon M        | `"MultiPolygon M"`        |
+  | 31      | Point ZM              | `"Point ZM"`              |
+  | 32      | LineString ZM         | `"LineString ZM"`         |
+  | 33      | Polygon ZM            | `"Polygon ZM"`            |
+  | 34      | MultiPoint ZM         | `"MultiPoint ZM"`         |
+  | 35      | MultiLineString ZM    | `"MultiLineString ZM"`    |
+  | 36      | MultiPolygon ZM       | `"MultiPolygon ZM"`       |
+
+- The union array may not contain more than one child array of a given geometry type. All child arrays of the union array must have the same dimensionality and edge type. So `Point` and `Polygon` arrays may both be children, but neither `Point` and `Point Z`, nor `Point` and `Polygon Z` arrays are permitted to be combined.
+
+#### Geometry
+
+```
+DenseUnion
+```
+
+So far, all geometry array types listed above have required that all geometries
+in the array be of the same type. An array of mixed geometry type is represented
+as a [dense
+union](https://arrow.apache.org/docs/format/Columnar.html#dense-union) whose
+children include zero or more of the above geometry array types.
+
+The geometry array allows for elements in the array to be of different geometry
+types; however, all child types must have the same edge type.
+
+- The "type ids" and field name of the union field metadata must be defined as such:
+
+  | Type ID | Geometry type         | Field name                |
+  | ------- | --------------------- | ------------------------- |
+  | 1       | Point                 | `"Point"`                 |
+  | 2       | LineString            | `"LineString"`            |
+  | 3       | Polygon               | `"Polygon"`               |
+  | 4       | MultiPoint            | `"MultiPoint"`            |
+  | 5       | MultiLineString       | `"MultiLineString"`       |
+  | 6       | MultiPolygon          | `"MultiPolygon"`          |
+  | 7       | GeometryCollection    | `"GeometryCollection"`    |
+  | 11      | Point Z               | `"Point Z"`               |
+  | 12      | LineString Z          | `"LineString Z"`          |
+  | 13      | Polygon Z             | `"Polygon Z"`             |
+  | 14      | MultiPoint Z          | `"MultiPoint Z"`          |
+  | 15      | MultiLineString Z     | `"MultiLineString Z"`     |
+  | 16      | MultiPolygon Z        | `"MultiPolygon Z"`        |
+  | 17      | GeometryCollection Z  | `"GeometryCollection Z"`  |
+  | 21      | Point M               | `"Point M"`               |
+  | 22      | LineString M          | `"LineString M"`          |
+  | 23      | Polygon M             | `"Polygon M"`             |
+  | 24      | MultiPoint M          | `"MultiPoint M"`          |
+  | 25      | MultiLineString M     | `"MultiLineString M"`     |
+  | 26      | MultiPolygon M        | `"MultiPolygon M"`        |
+  | 27      | GeometryCollection M  | `"GeometryCollection M"`  |
+  | 31      | Point ZM              | `"Point ZM"`              |
+  | 32      | LineString ZM         | `"LineString ZM"`         |
+  | 33      | Polygon ZM            | `"Polygon ZM"`            |
+  | 34      | MultiPoint ZM         | `"MultiPoint ZM"`         |
+  | 35      | MultiLineString ZM    | `"MultiLineString ZM"`    |
+  | 36      | MultiPolygon ZM       | `"MultiPolygon ZM"`       |
+  | 37      | GeometryCollection ZM | `"GeometryCollection ZM"` |
+
+  These type id values were chosen to match the WKB specification exactly for 2D geometries and match the WKB specification conceptually for Z, M, and ZM geometries, given the constraint that an Arrow union type ID must be between 0 and 127.
+
+- A geometry array does not need to contain _all_ possible child arrays, but the child arrays that it does contain must have the type ids defined above.
+- Child arrays of a geometry array do not need to have the same dimensionality. It will often be easier in practice to store only data of a single dimension, but allowing the geometry array concept to store any mix of types and dimensions enables a static schema for unknown input data.
+- The child arrays should not themselves contain GeoArrow metadata. Only the top-level geometry array should contain GeoArrow metadata.
+- GeometryCollections are allowed as children to make this Geometry array the most general of all geometry types.
+
+  Any geometries stored in GeometryCollection children will not be stored in contiguous memory with other children. For example, any points within the `GeometryCollection` child will not be contiguous with the `Point` child. If not needed, avoid storing data in GeometryCollection children for best performance.
+
+Note that single and multi geometries of the same type can be stored together in
+a Multi encoding without using this geometry type. For example, a mix of Polygon
+and MultiPolygon can be stored as MultiPolygons, with a Polygon being
+represented as a length-1 MultiPolygon. This is recommended over a geometry
+array if possible because it has less overhead per geometry.
+
 #### Box
 
 ```
 Struct<xmin: double, ymin: double, [zmin: double, [mmin: double>]], xmax: double, ymax: double, [zmax: double, [mmax: double>]]
-
 ```
 
 An array of axis-aligned rectangles is represented as a Struct array containing
@@ -180,6 +282,21 @@ The child fields MUST be named and ordered as follows for the given dimension:
 - XYZ: `[xmin, ymin, zmin, xmax, ymax, zmax]`
 - XYM: `[xmin, ymin, mmin, xmax, ymax, mmax]`
 - XYZM: `[xmin, ymin, zmin, mmin, xmax, ymax, zmax, mmax]`
+
+These bounds refer to a set of points such that a value `v` intersects a box if
+`v >= vmin` AND `v <= vmax` for `v` in [`x`, `y`, `z`, `m`].
+
+If `xmin > xmax`, a box may intersect a value `x` if  `x >= xmin` OR `x <= xmax`. This behaviour
+is designed to support compact bounds for geometries that happen to straddle the antimeridian.
+This behaviour ensures that a
+[GeoJSON bounding box](https://datatracker.ietf.org/doc/html/rfc7946#section-5.2), a
+GeoParquet file metadata bounding box (also based on GeoJSON), and a box derived from the
+Iceberg 3.0 specification for geometry and geography column statistics may be expressed
+as a GeoArrow Box without inspecting values. This exception does not apply to dimensions
+other than `x`.
+
+Empty ranges may be expressed by setting the `min` value to infinity and the `max` value to
+-infinity for any dimension.
 
 ### Missing values (nulls)
 
@@ -199,28 +316,6 @@ Except for Points, empty geometries can be faithfully represented as an
 empty outer list.
 
 Empty points can be represented as `POINT (NaN NaN)`.
-
-### GeometryCollection
-
-GeometryCollection features cannot yet be represented using a native encoding. Future
-support is planned using an
-[Arrow union type](https://arrow.apache.org/docs/format/Columnar.html#union-layout).
-
-GeometryCollection features can be represented using a serialized encoding (WKB or WKT),
-see below.
-
-### Mixed Geometry types
-
-Arrays containing features of mixed geometry types cannot yet be represented using a
-native encoding. Future support is planned using an
-[Arrow union type](https://arrow.apache.org/docs/format/Columnar.html#union-layout).
-
-Note that single and multi geometries of the same type can be stored together in a Multi
-encoding. For example, a mix of Polygon and MultiPolygon can be stored as MultiPolygons,
-with a Polygon being represented as a length-1 MultiPolygon.
-
-Arrays with mixed geometry types can be represented using a serialized encoding (WKB or
-WKT), see below.
 
 ### Field and child names
 
@@ -245,7 +340,7 @@ do not have a full geospatial stack at their disposal. The serialized encodings
 are provided to accomodate these producers and provide every opportunity to
 propagate critical metadata (e.g., CRS).
 
-#### Well-known binary (WKB): `Binary` or `LargeBinary`
+#### Well-known binary (WKB): `Binary`, `LargeBinary`, or `BinaryView`
 
 It may be useful for implementations that already have facilities to read
 and/or write well-known binary (WKB) to store features in this form without
@@ -257,7 +352,7 @@ The Arrow `Binary` type is composed of two buffers: a buffer
 of `int32` offsets and a `uint8` data buffer. The `LargeBinary` type is
 composed of an `int64` offset buffer and a `uint8` data buffer.
 
-#### Well-known text (WKT): `Utf8` or `LargeUtf8`
+#### Well-known text (WKT): `Utf8`, `LargeUtf8`, or `Utf8View`
 
 It may be useful for implementations that already have facilities to read
 and/or write well-known text (WKT) to store features in this form without

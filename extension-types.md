@@ -25,16 +25,27 @@ information.
 
 ## Extension names
 
-When GeoArrow-encoded Arrays have the `ARROW:extension:name` metadata field set,
-it should be set to one of `geoarrow.point`, `geoarrow.linestring`,
-`geoarrow.polygon`, `geoarrow.multipoint`, `geoarrow.multilinestring`,
-`geoarrow.multipolygon`, `geoarrow.box`, `geoarrow.wkb`, or `geoarrow.wkt`.
+When GeoArrow-encoded Arrays have the `ARROW:extension:name` metadata
+field set, it should be set to one of:
+
+- `geoarrow.point`
+- `geoarrow.linestring`
+- `geoarrow.polygon`
+- `geoarrow.multipoint`
+- `geoarrow.multilinestring`
+- `geoarrow.multipolygon`
+- `geoarrow.geometry`
+- `geoarrow.geometrycollection`
+- `geoarrow.box`
+- `geoarrow.wkb`
+- `geoarrow.wkt`
+
 These names correspond to the memory layouts and value constraints described in
 [GeoArrow memory layout specification](format.md); however, it should be noted
-that for each extension name there may be more than one concrete memory layout.
-The `ARROW:extension:name` and `ARROW:extension:metadata` metadata fields must
-only be set for the Array at the top level (i.e., child arrays must not carry an
-extension name or metadata).
+that multiple concrete memory layouts exist for each extension name.
+The `ARROW:extension:name`
+and `ARROW:extension:metadata` metadata fields must only be set for the Array at
+the top level (i.e., child arrays must not carry an extension name or metadata).
 
 ## Extension metadata
 
@@ -85,12 +96,70 @@ The following keys in the JSON metadata object are supported:
   of any of the above values (e.g., if it just serialized a CRS object
   specifically into one of these representations).
 
-- `edges`: A value of `"spherical"` instructs consumers that edges follow a
-  spherical path rather than a planar one. If this value is omitted, edges will
-  be interpreted as planar. This metadata key is only applicable to a
-  `geoarrow.linestring`, `geoarrow.polygon`, `geoarrow.multilinestring`,
-  `geoarrow.multipolygon`, `geoarrow.box`, `geoarrow.wkb`, or `geoarrow.wkt`
-  array and should be omitted for an Array with any other extension name.
+- `edges`: An optional JSON string describing the interpretation of edges
+  between explicitly defined vertices. This does not affect format
+  conversions (e.g., parsing `geoarrow.wkb` as `geoarrow.linestring`),
+  but does affect distance, intersection, bounding, overlay, length, and
+  area calculations. The `edges` key must be omitted to indicate planar/linear
+  edges or be one of:
+
+  - `"spherical"`: Edges in the longitude-latitude dimensions follow the
+    shortest distance between vertices approximated as the shortest distance
+    between the vertices on a perfect sphere. This edge interpretation is used by
+    [BigQuery Geography](https://cloud.google.com/bigquery/docs/geospatial-data#coordinate_systems_and_edges),
+    and [Snowflake Geography](https://docs.snowflake.com/en/sql-reference/data-types-geospatial).
+    A common library for interpreting edges in this way is
+    [Google's s2geometry](https://github.com/google/s2geometry); a common formula
+    for calculating distances along this trajectory is the
+    [Haversine Formula](https://en.wikipedia.org/wiki/Haversine_formula).
+  - `"vincenty"`: Edges in the longitude-latitude dimensions follow a path calculated
+    using [Vincenty's formula](https://en.wikipedia.org/wiki/Vincenty%27s_formulae) and
+    the ellipsoid specified by the `"crs"`.
+  - `"thomas"`:  Edges in the longitude-latitude dimensions follow a path calculated by
+    the fomula in Thomas, Paul D. Spheroidal geodesics, reference systems, & local geometry.
+    US Naval Oceanographic Office, 1970 using the ellipsoid specified by the `"crs"`.
+  - `"andoyer"`: Edges in the longitude-latitude dimensions follow a path calculated by
+    the fomula in Thomas, Paul D. Mathematical models for navigation systems. US Naval
+    Oceanographic Office, 1965 using the ellipsoid specified by the `"crs"`.
+  - `"karney"`: Edges in the longitude-latitude dimensions follow a path calculated by
+    the fomula in
+    [Karney, Charles FF. "Algorithms for geodesics." Journal of Geodesy 87 (2013): 43-55](https://link.springer.com/content/pdf/10.1007/s00190-012-0578-z.pdf)
+    and [GeographicLib](https://geographiclib.sourceforge.io/)
+    using the ellipsoid specified by the `"crs"`. GeographicLib available via modern
+    versions of PROJ.
+
+  If the `edges` key is omitted, edges will be interpreted following the language of
+  [Simple features access](https://www.opengeospatial.org/standards/sfa):
+
+  > **simple feature** feature with all geometric attributes described piecewise
+  > by straight line or planar interpolation between sets of points (Section 4.19).
+
+  When converting an array from one GeoArrow type to another, the `"edges"` field
+  should be propagated from the source to the destination. For example, when parsing
+  a `geoarrow.wkb` with `"edges": "spherical"` to `geoarrow.linestring`, the `edges`
+  key of the destination type should also be `"spherical"`.
+
+  If an implementation only has support for a single edge interpretation (e.g.,
+  a library with only planar edge support), an array with a different edge type
+  may be imported without loosing information if the geometries in the array
+  do not contain edges (e.g., `geoarrow.point`, `geoarrow.multipoint`, a
+  `geoarrow.wkb`/`geoarrow.wkt` that only contains points and multipoints, or any
+  array that only contains empty geometries). For arrays that contain edges,
+  the error introduced by ignoring the original edge interpretation is similar to
+  the error introduced by applying a coordinate transformation to vertices (which
+  is usually small but may be large or create invalid geometries, particularly if
+  vertices are not closely spaced). Ignoring the original edge interpretation will
+  silently introduce invalid and/or misinterpreted geometries for any edge that crosses
+  the antimeridian (i.e., longitude 180/-180) when translating from non-planar
+  to planar edges.
+
+  Implementations may implicitly import arrays with an unsupported edge type if the
+  arrays do not contain edges. Implementations may otherwise import arrays with an
+  unsupported edge type with an explicit opt-in from a user or if accompanied
+  by a prominent warning.
+
+  Implementations of `spherical`, `vincenty`, `thomas`, and `andoyer` are available via
+  [Boost::geometry](https://www.boost.org/doc/libs/1_87_0/libs/geometry/doc/html/index.html).
 
 If all metadata keys are omitted, the `ARROW:extension:metadata` should
 also be omitted.
