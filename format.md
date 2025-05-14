@@ -1,5 +1,7 @@
 # GeoArrow Memory Layout Specification
 
+**Format version 0.2.**
+
 Spatial information can be represented as a collection of discrete objects
 using points, lines, and polygons (i.e., vector data). The
 [Simple Feature Access](https://www.ogc.org/standards/sfa) standard provides
