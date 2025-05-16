@@ -96,10 +96,7 @@ FixedSizeList<double>[n_dim]
 An array of coordinates may also be represented by a single array
 of interleaved coordinates. `n_dim` can be 2, 3, or 4 depending on the
 dimensionality of the geometries, and the field name of the list should
-be "xy", "xyz" or "xyzm", reflecting the dimensionality. Compared to
-the `Struct` representation of a coordinate array, this representation may
-provide better performance for some operations and/or provide better
-compatibility with the memory layout of existing libraries.
+be "xy", "xyz" or "xyzm", reflecting the dimensionality.
 
 #### Point
 
