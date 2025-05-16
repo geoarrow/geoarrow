@@ -306,7 +306,7 @@ Arrow supports missing values through a validity bitmap, and for nested data
 types every level can be nullable. For this specification, only the outer
 level is allowed to have nulls, and all other levels (including the inner
 level with the actual coordinate values) should not contain any nulls. Those
-fields can be marked explicitly as non-nullable, but this is not required.
+fields SHOULD be marked explicitly as non-nullable.
 
 In practice this means you can have a missing geometry, but not a geometry
 with a null part or null (co)ordinate (for example, a polygon with a null
