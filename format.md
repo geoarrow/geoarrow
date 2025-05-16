@@ -69,7 +69,13 @@ implementations evolve, this specification may grow to support other coordinate
 representations or shrink to support only one if supporting multiple
 representations becomes a barrier to adoption.
 
-#### Coordinate (separated)
+#### Coordinate
+
+GeoArrow supports two coordinate representations, separated and interleaved, for maximum compatibility with how different systems may wish to store coordinates.
+
+While both coordinate representations are supported, the separated representation is recommended for most use cases.
+
+##### Coordinate (separated)
 
 ```
 Struct<x: double, y: double, [z: double, [m: double>]]
@@ -81,7 +87,7 @@ the child. The first and second child arrays must represent the x and y
 dimension; where z and m dimensions are both included, the z dimension must
 preceed the m dimension.
 
-#### Coordinate (interleaved)
+##### Coordinate (interleaved)
 
 ```
 FixedSizeList<double>[n_dim]
@@ -90,10 +96,7 @@ FixedSizeList<double>[n_dim]
 An array of coordinates may also be represented by a single array
 of interleaved coordinates. `n_dim` can be 2, 3, or 4 depending on the
 dimensionality of the geometries, and the field name of the list should
-be "xy", "xyz" or "xyzm", reflecting the dimensionality. Compared to
-the `Struct` representation of a coordinate array, this representation may
-provide better performance for some operations and/or provide better
-compatibility with the memory layout of existing libraries.
+be "xy", "xyz" or "xyzm", reflecting the dimensionality.
 
 #### Point
 
