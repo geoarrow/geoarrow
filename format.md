@@ -171,7 +171,7 @@ of the inner list should be "vertices".
 #### GeometryCollection
 
 ```
-List<DenseUnion>>
+List<DenseUnion>
 ```
 
 An array of GeometryCollections is represented as a list of a dense union array. In order to explicitly deny support for recursive geometry collections, this definition is not made in terms of the above Geometry array, but re-defines the internal union explicitly.
@@ -274,7 +274,7 @@ array if possible because it has less overhead per geometry.
 #### Box
 
 ```
-Struct<xmin: double, ymin: double, [zmin: double, [mmin: double>]], xmax: double, ymax: double, [zmax: double, [mmax: double>]]
+Struct<xmin: double, ymin: double, [zmin: double, [mmin: double]], xmax: double, ymax: double, [zmax: double, [mmax: double]]>
 ```
 
 An array of axis-aligned rectangles is represented as a Struct array containing
