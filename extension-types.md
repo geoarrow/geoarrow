@@ -1,7 +1,7 @@
 
 # GeoArrow Extension Type Definitions
 
-**Format version 0.2.**
+**Format version 0.3 (unreleased)**
 
 The memory layout specification provides an encoding for geometry types
 using the Arrow Columnar format; however, it does not provide a route by
@@ -41,6 +41,9 @@ field set, it should be set to one of:
 - `geoarrow.box`
 - `geoarrow.wkb`
 - `geoarrow.wkt`
+- `geoarrow.a5.cell`, `geoarrow.a5.point`, `geoarrow.a2.cell_union`
+- `geoarrow.h3.cell`, `geoarrow.h3.point`, `geoarrow.h3.cell_union`
+- `geoarrow.s2.cell`, `geoarrow.s2.point`, `geoarrow.s2.cell_union`
 
 These names correspond to the memory layouts and value constraints described in
 [GeoArrow memory layout specification](format.md); however, it should be noted
@@ -162,6 +165,16 @@ The following keys in the JSON metadata object are supported:
 
   Implementations of `spherical`, `vincenty`, `thomas`, and `andoyer` are available via
   [Boost::geometry](https://www.boost.org/doc/libs/1_87_0/libs/geometry/doc/html/index.html).
+
+  The `"edges"` key must not be specified for `geoarrow.box` or discrete grid types
+  (`geoarrow.a5*`, `geoarrow.h3*`, and `geoarrow.s2*`): `geoarrow.box` values are always
+  interpreted with planar edges and discrete grid systems define their own mapping into
+  either planar or spherical space.
+
+- `target_level`: For `geoarrow.h3.cell_union` and `geoarrow.a5.cell_union`, the level
+  at which child cells in the union should be resolved. This is necessary because the
+  cell geometry of a parent cell is not equal to the cell geometry of the union of its
+  child cells in the H3 and A5 systems.
 
 If all metadata keys are omitted, the `ARROW:extension:metadata` should
 also be omitted.

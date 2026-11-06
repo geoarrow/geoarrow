@@ -1,6 +1,6 @@
 # GeoArrow Memory Layout Specification
 
-**Format version 0.2.**
+**Format version 0.3 (unreleased)**
 
 Spatial information can be represented as a collection of discrete objects
 using points, lines, and polygons (i.e., vector data). The
@@ -367,6 +367,41 @@ modification.
 The Arrow `Utf8` type is composed of two buffers: a buffer
 of `int32` offsets and a `char` data buffer. The `LargeUtf8` type is composed of
 an `int64` offset buffer and a `char` data buffer.
+
+## Discrete Global Grid Systems (DGGS)
+
+Discrete Global Grid Systems divide the globe into polygons at various levels of detail
+to compactly represent points and/or areas. Conceptually, each cell in a grid has an
+identifier and a level and represents a polygon on the Earth's surface.
+
+There are three Arrow layouts defined for DGGS types:
+
+- **Cells** represented by a `UInt64`. Cells represent a polygon on the Earth's
+  surface.
+- **Points** are represented by a `UInt64`. Points share a physical representation with
+  the cell polygon but represent a point on the Earth's surface.
+- **Cell unions** are represented by a `List<UInt64>`. Cell union containment is defined
+  using mod 2 logic: a point is contained in a cell if and only if an odd number of cells
+  in the set contain it. This allows control over the tradeoff between compactness and
+  fidelity to an originating shape by allowing smaller cells to be subtracted from larger
+  cells.
+
+  Some grid systems (H3, A5) require an target cell level for a cell union to be
+  unambiguously resolved into an area of the Earth's surface. Unless otherwise specified
+  (e.g., by extension metadata), the target cell level is that of the minimum cell level
+  present in the element.
+
+  Cell unions logically represent a polygon or multipolygon on the Earth's surface.
+
+Each grid system defines its own mapping from a UInt64 cell identifier to a polygon
+on the Earth's surface. Whereas `UInt64` binary storage is not a property of all grid
+systems, for all the grid systems we standardize here, both the identifier and the
+level are packed into a `UInt64` binary representation. The GeoArrow specification
+currently recognizes three grid systems:
+
+- **A5**: <https://a5geo.org/>
+- **H3**: <https://h3geo.org>
+- **S2**: <https://s2geometry.io/devguide/s2cell_hierarchy>
 
 ## Concrete examples of the memory layout
 
