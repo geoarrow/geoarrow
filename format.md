@@ -368,6 +368,22 @@ The Arrow `Utf8` type is composed of two buffers: a buffer
 of `int32` offsets and a `char` data buffer. The `LargeUtf8` type is composed of
 an `int64` offset buffer and a `char` data buffer.
 
+## Discrete Global Grid Systems (DGGS)
+
+Discrete Global Grid Systems divide the globe into polygons at various levels of detail
+to compactly represent points and/or areas. Conceptually, each cell in a grid has an
+identifier and a level and represents a polygon on the Earth's surface.
+
+There are only two Arrow layouts defined for
+
+- Cell identifiers are represented by a `UInt64`. While this is not a property of all grid
+  systems, for all the grid systems we standardize here, both the identifier and the
+  level are packed into a `uint64` binary representation.
+- Collections of cells are represented by a `List<Uint64>`.
+
+Each grid system defines its own mapping from a UInt64 cell identifier to a polygon
+on the Earth's surface.
+
 ## Concrete examples of the memory layout
 
 
