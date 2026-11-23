@@ -68,6 +68,7 @@ using the Arrow IPC format).
 * [geoarrow-r](https://github.com/geoarrow/geoarrow-r): R bindings to geoarrow-c that provide
   integrations with libraries like sf and Arrow for geospatial data handling.
 * [geoarrow-js](https://github.com/geoarrow/geoarrow-js): Pure TypeScript implementation of GeoArrow, on top of the Arrow JavaScript implementation.
+* [geoarrow-go](https://github.com/geoarrow/geoarrow-go): Pure Golang implementation of GeoArrow
 
 ## Downstream libraries
 
